@@ -8,10 +8,13 @@ connectDB();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/petitions", require("./routes/petitionRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Civix Backend Running...");
