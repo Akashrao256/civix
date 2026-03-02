@@ -25,6 +25,7 @@ const petitionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["active", "under_review", "closed"],
+      lowercase: true,
       default: "active",
     },
     creator: {

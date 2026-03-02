@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const Petition = require("../models/Petition");
 const Signature = require("../models/Signature");
 
-
 /* ===================================================
    CREATE PETITION
 =================================================== */
@@ -12,7 +11,7 @@ exports.createPetition = async (req, res) => {
 
     if (!title || !description || !category || !location) {
       return res.status(400).json({
-        message: "title, description, category, and location are required"
+        message: "title, description, category, and location are required",
       });
     }
 
@@ -21,19 +20,17 @@ exports.createPetition = async (req, res) => {
       description,
       category,
       location,
-      creator: req.user.id
+      creator: req.user.id,
     });
 
     res.status(201).json({
       message: "Petition created successfully",
-      petition
+      petition,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ===================================================
    SIGN PETITION
@@ -42,6 +39,13 @@ exports.signPetition = async (req, res) => {
   try {
     const petitionId = req.params.id;
     const userId = req.user.id;
+
+    // 🔐 ROLE CHECK HERE (correct place)
+    if (req.user.role !== "citizen") {
+      return res.status(403).json({
+        message: "Only citizens can sign petitions",
+      });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(petitionId)) {
       return res.status(400).json({ message: "Invalid Petition ID" });
@@ -54,47 +58,39 @@ exports.signPetition = async (req, res) => {
 
     const alreadySigned = await Signature.findOne({
       petition: petitionId,
-      user: userId
+      user: userId,
     });
 
     if (alreadySigned) {
       return res.status(400).json({
-        message: "You have already signed this petition"
+        message: "You have already signed this petition",
       });
     }
 
     await Signature.create({
       petition: petitionId,
-      user: userId
+      user: userId,
     });
 
     const signatureCount = await Signature.countDocuments({
-      petition: petitionId
+      petition: petitionId,
     });
 
     res.status(201).json({
       message: "Petition signed successfully",
-      signatureCount
+      signatureCount,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ===================================================
    GET PETITIONS (FILTER + PAGINATION)
 =================================================== */
 exports.getPetitions = async (req, res) => {
   try {
-    const {
-      location,
-      category,
-      status,
-      page = 1,
-      limit = 10
-    } = req.query;
+    const { location, category, status, page = 1, limit = 10 } = req.query;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -102,14 +98,11 @@ exports.getPetitions = async (req, res) => {
 
     const filter = {};
 
-    if (location)
-      filter.location = { $regex: location, $options: "i" };
+    if (location) filter.location = { $regex: location, $options: "i" };
 
-    if (category)
-      filter.category = { $regex: category, $options: "i" };
+    if (category) filter.category = { $regex: category, $options: "i" };
 
-    if (status)
-      filter.status = status;
+    if (status) filter.status = status;
 
     const petitions = await Petition.find(filter)
       .populate("creator", "fullName email")
@@ -120,14 +113,14 @@ exports.getPetitions = async (req, res) => {
     const petitionsWithCount = await Promise.all(
       petitions.map(async (petition) => {
         const count = await Signature.countDocuments({
-          petition: petition._id
+          petition: petition._id,
         });
 
         return {
           ...petition.toObject(),
-          signatureCount: count
+          signatureCount: count,
         };
-      })
+      }),
     );
 
     const total = await Petition.countDocuments(filter);
@@ -136,14 +129,12 @@ exports.getPetitions = async (req, res) => {
       total,
       currentPage: pageNumber,
       totalPages: Math.ceil(total / limitNumber),
-      petitions: petitionsWithCount
+      petitions: petitionsWithCount,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ===================================================
    UPDATE PETITION (Creator Only)
@@ -182,14 +173,12 @@ exports.updatePetition = async (req, res) => {
 
     res.status(200).json({
       message: "Petition updated successfully",
-      petition
+      petition,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ===================================================
    UPDATE STATUS (Official Only)
@@ -211,7 +200,7 @@ exports.updateStatus = async (req, res) => {
 
     if (req.user.role !== "official") {
       return res.status(403).json({
-        message: "Only officials can update petition status"
+        message: "Only officials can update petition status",
       });
     }
 
@@ -225,9 +214,8 @@ exports.updateStatus = async (req, res) => {
 
     res.status(200).json({
       message: "Status updated successfully",
-      petition
+      petition,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
