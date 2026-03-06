@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["citizen", "official"],
     default: "citizen"
+  },
+  passwordResetToken: {
+    type: String
+  },
+  passwordResetExpire: {
+    type: Date
   }
 }, { timestamps: true });
 
