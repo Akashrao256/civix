@@ -30,12 +30,40 @@ const userSchema = new mongoose.Schema({
     enum: ["citizen", "official", "admin"],
     default: "citizen"
   },
+<<<<<<< HEAD
 
   isApproved: {
     type: Boolean,
     default: function () {
       return this.role !== "official";
     }
+=======
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    type: String
+  },
+  otpExpires: {
+    type: Date
+  },
+  resetOtp: {
+    type: String
+  },
+  resetOtpExpires: {
+    type: Date
+  },
+  resetOtpVerified: {
+    type: Boolean,
+    default: false
+  },
+  passwordResetotp: {
+    type: String
+  },
+  passwordResetExpires: {
+    type: Date
+>>>>>>> dc5b6e9b0ef57dc51244871082eba9d37a5754d0
   }
 
 }, { timestamps: true });

@@ -7,7 +7,8 @@ const {
   signPetition,
   getPetitions,
   updatePetition,
-  updateStatus
+  updateStatus,
+  deletePetition
 } = require("../controllers/petitionController");
 
 
@@ -16,6 +17,7 @@ router.get("/", getPetitions);
 router.post("/", protect, createPetition);
 
 router.put("/:id", protect, updatePetition);
+router.delete("/:id", protect, deletePetition);
 
 router.post("/:id/sign", protect, signPetition);
 
