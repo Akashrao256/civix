@@ -5,9 +5,7 @@ const sendEmail = require("../utils/sendEmail");
 
 // REGISTER
 exports.registerUser = async (req, res) => {
-
   try {
-
     const { fullName, email, password, location, role } = req.body;
 
     if (!fullName || !email || !password || !location) {
@@ -24,12 +22,10 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = Date.now() + 10 * 60 * 1000;
-
 
     const user = await User.create({
       fullName,
@@ -39,7 +35,8 @@ exports.registerUser = async (req, res) => {
       role,
       otp,
       otpExpires,
-      isVerified: false
+      isVerified: false,
+      isApproved: role !== "official"
     });
 
     await sendEmail(
@@ -97,9 +94,7 @@ exports.verifyOTP = async (req, res) => {
 
 // LOGIN
 exports.loginUser = async (req, res) => {
-
   try {
-
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -138,8 +133,6 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-
-
 };
 
 // FORGOT PASSWORD
@@ -247,4 +240,3 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-

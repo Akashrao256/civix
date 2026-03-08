@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema({
     default: "citizen"
   },
 
-
   isApproved: {
     type: Boolean,
     default: function () {
