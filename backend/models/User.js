@@ -23,10 +23,30 @@ const userSchema = new mongoose.Schema({
     enum: ["citizen", "official"],
     default: "citizen"
   },
-  passwordResetToken: {
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
     type: String
   },
-  passwordResetExpire: {
+  otpExpires: {
+    type: Date
+  },
+  resetOtp: {
+    type: String
+  },
+  resetOtpExpires: {
+    type: Date
+  },
+  resetOtpVerified: {
+    type: Boolean,
+    default: false
+  },
+  passwordResetotp: {
+    type: String
+  },
+  passwordResetExpires: {
     type: Date
   }
 }, { timestamps: true });

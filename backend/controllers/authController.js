@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 // REGISTER
 exports.registerUser = async (req, res) => {
@@ -15,20 +15,64 @@ exports.registerUser = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 10 * 60 * 1000;
 
     const user = await User.create({
       fullName,
       email,
       password: hashedPassword,
       location,
-      role
+      role,
+      otp,
+      otpExpires,
+      isVerified: false
     });
 
+    await sendEmail(
+      email,
+      "Your Civix OTP Verification Code",
+      `Your OTP is ${otp}. It will expire in 10 minutes.`
+    );
+
     res.status(201).json({
-      message: "User Registered Successfully",
+      message: "User Registered Successfully. OTP sent to email.",
       user
     });
 
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// VERIFY OTP
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.otp || user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (!user.otpExpires || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -47,6 +91,10 @@ exports.loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid Password" });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
     const token = jwt.sign(
@@ -79,27 +127,56 @@ exports.forgotPassword = async (req, res) => {
 
     if (!user) {
       return res.status(200).json({
-        message: "If an account exists with this email, reset instructions have been generated.",
+        message: "If an account exists with this email, reset OTP has been sent.",
       });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedResetToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-
-    user.passwordResetToken = hashedResetToken;
-    user.passwordResetExpire = Date.now() + 15 * 60 * 1000;
+    const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetOtp = resetOtp;
+    user.resetOtpExpires = Date.now() + 10 * 60 * 1000;
+    user.resetOtpVerified = false;
     await user.save({ validateBeforeSave: false });
 
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
+    await sendEmail(
+      email,
+      "Your Civix Password Reset OTP",
+      `Your password reset OTP is ${resetOtp}. It will expire in 10 minutes.`
+    );
 
     res.status(200).json({
-      message: "Password reset link generated successfully.",
-      resetUrl,
+      message: "Password reset OTP sent successfully.",
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// VERIFY RESET OTP
+exports.verifyResetOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.resetOtp || user.resetOtp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (!user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    user.resetOtpVerified = true;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({ message: "Reset OTP verified successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -108,29 +185,31 @@ exports.forgotPassword = async (req, res) => {
 // RESET PASSWORD
 exports.resetPassword = async (req, res) => {
   try {
-    const { token } = req.params;
-    const { password } = req.body;
+    const { email, password } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ message: "New password is required" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and new password are required" });
     }
 
-    const hashedResetToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
-
-    const user = await User.findOne({
-      passwordResetToken: hashedResetToken,
-      passwordResetExpire: { $gt: Date.now() },
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Reset link is invalid or expired" });
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.resetOtpVerified) {
+      return res.status(400).json({ message: "Please verify reset OTP before resetting password." });
+    }
+
+    if (!user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
+      return res.status(400).json({ message: "Reset OTP expired. Please request a new OTP." });
     }
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
+    user.resetOtp = undefined;
+    user.resetOtpExpires = undefined;
+    user.resetOtpVerified = false;
     user.passwordResetToken = undefined;
     user.passwordResetExpire = undefined;
     await user.save();

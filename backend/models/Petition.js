@@ -24,14 +24,29 @@ const petitionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["active", "under_review", "closed"],
+      enum: ["pending", "under_review", "active", "closed"],
       lowercase: true,
-      default: "active",
+      default: "pending",
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    deleteReason: {
+      type: String,
+      trim: true,
+    },
+    deletedAt: {
+      type: Date,
     },
   },
   { timestamps: true },

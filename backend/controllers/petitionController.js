@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const Petition = require("../models/Petition");
 const Signature = require("../models/Signature");
 
@@ -52,7 +53,7 @@ exports.signPetition = async (req, res) => {
     }
 
     const petition = await Petition.findById(petitionId);
-    if (!petition) {
+    if (!petition || petition.isDeleted) {
       return res.status(404).json({ message: "Petition not found" });
     }
 
@@ -96,13 +97,42 @@ exports.getPetitions = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const filter = {};
+    let requester = null;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      try {
+        const token = req.headers.authorization.split(" ")[1];
+        requester = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (error) {
+        requester = null;
+      }
+    }
 
-    if (location) filter.location = { $regex: location, $options: "i" };
+    const conditions = [];
 
-    if (category) filter.category = { $regex: category, $options: "i" };
+    if (requester?.role !== "official") {
+      conditions.push({ isDeleted: false });
+      if (requester?.role === "citizen") {
+        conditions.push({
+          $or: [{ status: "active" }, { creator: requester.id }],
+        });
+      } else {
+        conditions.push({ status: "active" });
+      }
+    }
 
-    if (status) filter.status = status;
+    if (location) conditions.push({ location: { $regex: location, $options: "i" } });
+
+    if (category) conditions.push({ category: { $regex: category, $options: "i" } });
+
+    if (status) conditions.push({ status });
+
+    const filter =
+      conditions.length > 1
+        ? { $and: conditions }
+        : conditions[0] || {};
 
     const petitions = await Petition.find(filter)
       .populate("creator", "fullName email")
@@ -150,7 +180,7 @@ exports.updatePetition = async (req, res) => {
 
     const petition = await Petition.findById(petitionId);
 
-    if (!petition) {
+    if (!petition || petition.isDeleted) {
       return res.status(404).json({ message: "Petition not found" });
     }
 
@@ -194,7 +224,7 @@ exports.updateStatus = async (req, res) => {
 
     const petition = await Petition.findById(petitionId);
 
-    if (!petition) {
+    if (!petition || petition.isDeleted) {
       return res.status(404).json({ message: "Petition not found" });
     }
 
@@ -204,7 +234,7 @@ exports.updateStatus = async (req, res) => {
       });
     }
 
-    const validStatuses = ["active", "under_review", "closed"];
+    const validStatuses = ["pending", "active", "under_review", "closed"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
@@ -214,6 +244,56 @@ exports.updateStatus = async (req, res) => {
 
     res.status(200).json({
       message: "Status updated successfully",
+      petition,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ===================================================
+   DELETE PETITION (SOFT DELETE)
+=================================================== */
+exports.deletePetition = async (req, res) => {
+  try {
+    const petitionId = req.params.id;
+    const userId = req.user.id;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(petitionId)) {
+      return res.status(400).json({ message: "Invalid Petition ID" });
+    }
+
+    const petition = await Petition.findById(petitionId);
+
+    if (!petition || petition.isDeleted) {
+      return res.status(404).json({ message: "Petition not found" });
+    }
+
+    const isOfficial = req.user.role === "official";
+    const isCreator = petition.creator.toString() === userId;
+
+    if (isOfficial) {
+      // Officials can delete any petition
+    } else if (isCreator && petition.status === "pending") {
+      // Creator can only delete pending petitions
+    } else if (isCreator) {
+      return res.status(403).json({
+        message: "You can only delete your petition while it is pending",
+      });
+    } else {
+      return res.status(403).json({ message: "Not authorized to delete" });
+    }
+
+    petition.isDeleted = true;
+    petition.deletedBy = userId;
+    petition.deleteReason = reason || "";
+    petition.deletedAt = new Date();
+
+    await petition.save();
+
+    res.status(200).json({
+      message: "Petition deleted successfully",
       petition,
     });
   } catch (error) {
