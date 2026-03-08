@@ -4,48 +4,71 @@ const jwt = require("jsonwebtoken");
 
 // REGISTER
 exports.registerUser = async (req, res) => {
+
   try {
+
     const { fullName, email, password, location, role } = req.body;
 
+    if (!fullName || !email || !password || !location) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be 6+ characters" });
+    }
+
     const userExists = await User.findOne({ email });
+
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       fullName,
       email,
       password: hashedPassword,
       location,
-      role
+      role,
+      isApproved: role === "citizen"
     });
 
     res.status(201).json({
-      message: "User Registered Successfully",
-      user
+      message: role === "official"
+        ? "Registration submitted. Waiting for admin approval."
+        : "User registered successfully"
     });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+
 };
 
 // LOGIN
 exports.loginUser = async (req, res) => {
+
   try {
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(400).json({ message: "Invalid Email" });
+      return res.status(400).json({ message: "Invalid email" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Password" });
+    if (user.role === "official" && !user.isApproved) {
+      return res.status(403).json({
+        message: "Account waiting for admin approval"
+      });
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     const token = jwt.sign(
@@ -55,7 +78,6 @@ exports.loginUser = async (req, res) => {
     );
 
     res.json({
-      message: "Login Successful",
       token,
       user
     });
@@ -63,4 +85,5 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+
 };
