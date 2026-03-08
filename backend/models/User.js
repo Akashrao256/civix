@@ -31,11 +31,39 @@ const userSchema = new mongoose.Schema({
     default: "citizen"
   },
 
+
   isApproved: {
     type: Boolean,
     default: function () {
       return this.role !== "official";
     }
+  },
+
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    type: String
+  },
+  otpExpires: {
+    type: Date
+  },
+  resetOtp: {
+    type: String
+  },
+  resetOtpExpires: {
+    type: Date
+  },
+  resetOtpVerified: {
+    type: Boolean,
+    default: false
+  },
+  passwordResetToken: {
+    type: String
+  },
+  passwordResetExpire: {
+    type: Date
   }
 
 }, { timestamps: true });
