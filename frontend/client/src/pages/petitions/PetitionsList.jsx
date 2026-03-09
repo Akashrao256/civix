@@ -3,6 +3,8 @@ import { useNavigate, NavLink } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import PetitionCard from "../../components/PetitionCard";
+import { City } from "country-state-city";
+import Topbar from "../../components/Topbar";
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 const STATUSES = ["All", "active", "under_review", "closed"];
@@ -24,7 +26,6 @@ export default function PetitionsList() {
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [total, setTotal] = useState(0);
 
     const showToast = (message, type = "success") => {
         setToast({ message, type });
@@ -53,7 +54,7 @@ export default function PetitionsList() {
 
             setPetitions(list);
             setTotalPages(res.data.totalPages || 1);
-            setTotal(res.data.total || 0);
+
         } catch (err) {
             console.error(err);
             showToast("Failed to load petitions.", "error");
@@ -85,7 +86,7 @@ export default function PetitionsList() {
     const resetFilters = () => {
         setSearch(""); setCategory("All"); setStatus("All"); setLocation(""); setPage(1);
     };
-
+    const cities = City.getCitiesOfCountry("IN");
     return (
         <div className="pl-layout">
             {/* Toast */}
@@ -94,7 +95,7 @@ export default function PetitionsList() {
                     {toast.message}
                 </div>
             )}
-
+            <Topbar />
             {/* Sidebar */}
             <aside className="pl-sidebar">
                 <div className="pl-sidebar-brand">
@@ -131,9 +132,9 @@ export default function PetitionsList() {
                     <button className="pl-logout-icon" onClick={handleLogout} title="Logout">↪</button>
                 </div>
             </aside>
-
             {/* Main */}
             <main className="pl-main">
+                 
                 {/* Header */}
                 <header className="pl-header">
                     <div>
@@ -165,15 +166,23 @@ export default function PetitionsList() {
                         {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
                     </select>
 
-                    <input
+                    <select
                         className="pl-select"
-                        placeholder="📍 Location..."
                         value={location}
-                        onChange={(e) => { setLocation(e.target.value); setPage(1); }}
-                    />
+                        onChange={(e) => {
+                            setLocation(e.target.value);
+                            setPage(1);
+                        }}
+                    >
+                        <option value="">Select City</option>
+                        {cities.map((city, index) => (
+                            <option key={`${city.name}-${index}`} value={city.name}>
+                                {city.name}
+                            </option>
+                        ))}
+                    </select>
 
                     <button className="pl-reset-btn" onClick={resetFilters}>✕ Reset</button>
-                    <span className="pl-count">{total} petition{total !== 1 ? "s" : ""}</span>
                 </div>
 
                 {/* Grid */}

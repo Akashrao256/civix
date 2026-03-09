@@ -98,7 +98,6 @@ export default function EditPetition() {
                     <button className="pl-logout-icon" onClick={handleLogout} title="Logout">↪</button>
                 </div>
             </aside>
-
             {/* Main */}
             <main className="pl-main">
                 <header className="pl-header">

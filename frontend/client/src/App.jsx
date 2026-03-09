@@ -3,7 +3,9 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OfficialRoute from "./components/OfficialRoute";
 import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
+/*import Register from "./pages/auth/Register";*/
+import CitizenRegister from "./pages/auth/CitizenRegister";
+import OfficialRegister from "./pages/auth/OfficialRegister";
 import Dashboard from "./pages/Dashboard";
 import OfficialDashboard from "./pages/official/OfficialDashboard";
 import PetitionsList from "./pages/petitions/PetitionsList";
@@ -17,8 +19,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
+          
+          <Route path="/register/citizen" element={<CitizenRegister />} />
+          <Route path="/register/official" element={<OfficialRegister />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
           {/* Petition Routes */}

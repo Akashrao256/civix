@@ -4,9 +4,14 @@ import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 
 const STATUS_COLORS = {
-    "Active": { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
-    "Under Review": { bg: "#fef9c3", color: "#b45309", dot: "#f59e0b" },
-    "Closed": { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
+  active: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
+  under_review: { bg: "#fef9c3", color: "#b45309", dot: "#f59e0b" },
+  closed: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
+};
+const STATUS_LABELS = {
+  active: "Active",
+  under_review: "Under Review",
+  closed: "Closed",
 };
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
@@ -60,16 +65,34 @@ export default function OfficialDashboard() {
                 prev.map(p => p._id === petitionId ? { ...p, status: newStatus } : p)
             );
             setStats(prev => {
-                const oldPetition = petitions.find(p => p._id === petitionId);
-                const updated = { ...prev };
-                if (oldPetition.status === "Active") updated.active--;
-                if (oldPetition.status === "Under Review") updated.review--;
-                if (oldPetition.status === "Closed") updated.closed--;
-                if (newStatus === "Active") updated.active++;
-                if (newStatus === "Under Review") updated.review++;
-                if (newStatus === "Closed") updated.closed++;
-                return updated;
-            });
+    const oldPetition = petitions.find(p => p._id === petitionId);
+    if (!oldPetition) return prev;
+
+    const updated = { ...prev };
+
+    if (oldPetition.status !== newStatus) {
+
+        if (oldPetition.status === "active" && updated.active > 0)
+            updated.active--;
+
+        if (oldPetition.status === "under_review" && updated.review > 0)
+            updated.review--;
+
+        if (oldPetition.status === "closed" && updated.closed > 0)
+            updated.closed--;
+
+        if (newStatus === "active")
+            updated.active++;
+
+        if (newStatus === "under_review")
+            updated.review++;
+
+        if (newStatus === "closed")
+            updated.closed++;
+    }
+
+    return updated;
+});
             showToast("Petition status updated successfully!");
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to update status.", "error");
@@ -238,7 +261,7 @@ export default function OfficialDashboard() {
                                             <td>
                                                 <span className="od-status-badge" style={{ background: sc.bg, color: sc.color }}>
                                                     <span className="od-status-dot" style={{ background: sc.dot }}></span>
-                                                    {p.status}
+                                                    {STATUS_LABELS[p.status]}
                                                 </span>
                                             </td>
                                             <td>
@@ -248,9 +271,9 @@ export default function OfficialDashboard() {
                                                     disabled={updating === p._id}
                                                     onChange={e => handleStatusChange(p._id, e.target.value)}
                                                 >
-                                                    <option value="Active">Active</option>
-                                                    <option value="Under Review">Under Review</option>
-                                                    <option value="Closed">Closed</option>
+                                                    <option value="active">Active</option>
+                                                    <option value="under_review">Under Review</option>
+                                                    <option value="closed">Closed</option>
                                                 </select>
                                                 {updating === p._id && <span className="od-updating">⟳</span>}
                                             </td>

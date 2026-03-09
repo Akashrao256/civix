@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 
-export default function Register() {
+export default function OfficialRegister() {
     const navigate = useNavigate();
 
-    const [role, setRole] = useState("citizen");
+    const role = "official";
+
     const [form, setForm] = useState({
         fullName: "",
         email: "",
@@ -14,6 +15,7 @@ export default function Register() {
         location: "",
         department: "",
     });
+
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -28,16 +30,19 @@ export default function Register() {
         }
 
         setLoading(true);
+
         try {
             const payload = {
                 fullName: form.fullName,
                 email: form.email,
                 password: form.password,
-                location: role === "official" ? form.department : form.location,
+                location: form.department,
                 role,
             };
+
             await API.post("/auth/register", payload);
             navigate("/login");
+
         } catch (err) {
             setError(err.response?.data?.message || "Registration failed. Please try again.");
         } finally {
@@ -47,47 +52,35 @@ export default function Register() {
 
     return (
         <div className="auth-page">
-            {/* Left Panel */}
+
             <div className="auth-left">
+
                 <div className="auth-brand">
                     <div className="auth-logo">⚖️</div>
                     <h1>Civix</h1>
-                    <p>Digital Civic Engagement &amp; Petition Platform</p>
+                    <p>Digital Civic Engagement & Petition Platform</p>
                 </div>
+
                 <div className="auth-feature-list">
-                    <div className="auth-feature">🗳️ Create &amp; sign petitions</div>
+                    <div className="auth-feature">🗳️ Create & sign petitions</div>
                     <div className="auth-feature">📊 Vote in public sentiment polls</div>
                     <div className="auth-feature">📍 Geo-targeted community issues</div>
                     <div className="auth-feature">📋 Track official responses</div>
                 </div>
+
             </div>
 
-            {/* Right Panel */}
             <div className="auth-right">
-                <div className="auth-card">
-                    <h2 className="auth-title">Create Account</h2>
-                    <p className="auth-subtitle">Join Civix and make your voice count</p>
 
-                    {/* Role Selector */}
-                    <div className="role-selector">
-                        <button
-                            type="button"
-                            className={`role-btn ${role === "citizen" ? "active" : ""}`}
-                            onClick={() => setRole("citizen")}
-                        >
-                            👤 Citizen
-                        </button>
-                        <button
-                            type="button"
-                            className={`role-btn ${role === "official" ? "active" : ""}`}
-                            onClick={() => setRole("official")}
-                        >
-                            🏛️ Government Official
-                        </button>
-                    </div>
+                <div className="auth-card">
+
+                    <h2 className="auth-title">Create Account</h2>
+                    <p className="auth-subtitle">Join Civix to review petitions and engage with your community</p>
 
                     <form onSubmit={handleSubmit} className="auth-form">
+
                         <div className="form-row">
+
                             <div className="form-group">
                                 <label>Full Name</label>
                                 <input
@@ -99,6 +92,7 @@ export default function Register() {
                                     required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Email Address</label>
                                 <input
@@ -110,35 +104,23 @@ export default function Register() {
                                     required
                                 />
                             </div>
+
                         </div>
 
-                        {role === "citizen" ? (
-                            <div className="form-group">
-                                <label>Location / City</label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    placeholder="e.g. Chennai, Tamil Nadu"
-                                    value={form.location}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        ) : (
-                            <div className="form-group">
-                                <label>Department / Ministry</label>
-                                <input
-                                    type="text"
-                                    name="department"
-                                    placeholder="e.g. Department of Urban Affairs"
-                                    value={form.department}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        )}
+                        <div className="form-group">
+                            <label>Department / Ministry</label>
+                            <input
+                                type="text"
+                                name="department"
+                                placeholder="e.g. Department of Urban Affairs"
+                                value={form.department}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
 
                         <div className="form-row">
+
                             <div className="form-group">
                                 <label>Password</label>
                                 <input
@@ -150,6 +132,7 @@ export default function Register() {
                                     required
                                 />
                             </div>
+
                             <div className="form-group">
                                 <label>Confirm Password</label>
                                 <input
@@ -161,21 +144,21 @@ export default function Register() {
                                     required
                                 />
                             </div>
+
                         </div>
 
                         {error && <div className="auth-error">{error}</div>}
 
                         <button type="submit" className="auth-submit-btn" disabled={loading}>
-                            {loading
-                                ? "Creating account..."
-                                : `Register as ${role === "citizen" ? "Citizen" : "Official"}`}
+                            {loading ? "Creating account..." : "Register as Official"}
                         </button>
+
                     </form>
 
                     <p className="auth-switch">
-                        Already have an account?{" "}
-                        <Link to="/login">Sign in</Link>
+                        Already have an account? <Link to="/login">Sign in</Link>
                     </p>
+
                 </div>
             </div>
         </div>

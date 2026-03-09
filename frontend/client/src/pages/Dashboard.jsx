@@ -57,7 +57,7 @@ export default function Dashboard() {
         </ul>
       </aside>
 
-      <div className="main">
+      <div className="main"> 
         <Topbar />
 
         <div className="welcome-banner">

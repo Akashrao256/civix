@@ -70,7 +70,7 @@ export default function Login() {
                             className={`role-btn ${role === "official" ? "active" : ""}`}
                             onClick={() => setRole("official")}
                         >
-                            🏛️ Government Official
+                            🏛️ Official
                         </button>
                     </div>
 
@@ -108,7 +108,7 @@ export default function Login() {
 
                     <p className="auth-switch">
                         Don&apos;t have an account?{" "}
-                        <Link to="/register">Create one</Link>
+                        <Link to={role === "official" ? "/register/official" : "/register/citizen"}>Create one</Link>
                     </p>
                 </div>
             </div>
