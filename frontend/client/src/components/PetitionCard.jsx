@@ -45,12 +45,15 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, i
       {/* Title */}
       <h3 className="pc-title">{petition.title}</h3>
 
-      {/* Description */}
+      {/* Description — flex-grow so footer is always pinned */}
       <p className="pc-desc">
         {petition.description?.length > 110
           ? petition.description.slice(0, 110) + "..."
           : petition.description}
       </p>
+
+      {/* Spacer pushes footer down */}
+      <div className="pc-spacer" />
 
       {/* Meta */}
       <div className="pc-meta">

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import Topbar from "../components/Topbar";
+import AppSidebar from "../components/AppSidebar";
 import StatCard from "../components/StatCard";
 import PetitionCard from "../components/PetitionCard";
 
@@ -35,31 +35,10 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="logo">⚖️ Civix</h2>
-        <ul>
-          <li>
-            <NavLink to="/dashboard" className={({ isActive }) => isActive ? "active" : ""}>
-              ⊞ Dashboard
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/petitions" className={({ isActive }) => isActive ? "active" : ""}>
-              📋 Petitions
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/petitions/create" className={({ isActive }) => isActive ? "active" : ""}>
-              ✍️ Create Petition
-            </NavLink>
-          </li>
-        </ul>
-      </aside>
+    <div className="app-layout">
+      <AppSidebar />
 
-      <div className="main"> 
-        <Topbar />
-
+      <div className="app-main">
         <div className="welcome-banner">
           <div>
             <h2>Welcome Back, {user?.fullName?.split(" ")[0] || "Citizen"} 👋</h2>

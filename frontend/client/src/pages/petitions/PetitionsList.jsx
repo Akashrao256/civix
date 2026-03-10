@@ -1,23 +1,24 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import PetitionCard from "../../components/PetitionCard";
+import AppSidebar from "../../components/AppSidebar";
 import { City } from "country-state-city";
-import Topbar from "../../components/Topbar";
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 const STATUSES = ["All", "active", "under_review", "closed"];
 const STATUS_LABELS = { All: "All", active: "Active", under_review: "Under Review", closed: "Closed" };
 
 export default function PetitionsList() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [petitions, setPetitions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [signing, setSigning] = useState(null);
     const [toast, setToast] = useState(null);
+    const [totalCount, setTotalCount] = useState(0);
 
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("All");
@@ -53,6 +54,7 @@ export default function PetitionsList() {
             }
 
             setPetitions(list);
+            setTotalCount(list.length);
             setTotalPages(res.data.totalPages || 1);
 
         } catch (err) {
@@ -81,60 +83,25 @@ export default function PetitionsList() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate("/login"); };
-
     const resetFilters = () => {
         setSearch(""); setCategory("All"); setStatus("All"); setLocation(""); setPage(1);
     };
+
     const cities = City.getCitiesOfCountry("IN");
+
     return (
-        <div className="pl-layout">
+        <div className="app-layout">
             {/* Toast */}
             {toast && (
                 <div className={`pl-toast ${toast.type === "error" ? "pl-toast-error" : ""}`}>
                     {toast.message}
                 </div>
             )}
-            <Topbar />
-            {/* Sidebar */}
-            <aside className="pl-sidebar">
-                <div className="pl-sidebar-brand">
-                    <span className="pl-brand-icon">⚖️</span>
-                    <div>
-                        <h2>Civix</h2>
-                        <p>Citizen Portal</p>
-                    </div>
-                </div>
 
-                <nav className="pl-nav">
-                    {[
-                        { icon: "⊞", label: "Dashboard", to: "/dashboard" },
-                        { icon: "📋", label: "Petitions", to: "/petitions" },
-                        { icon: "✍️", label: "Create Petition", to: "/petitions/create" },
-                    ].map((item) => (
-                        <NavLink
-                            key={item.label}
-                            to={item.to}
-                            className={({ isActive }) => `pl-nav-item${isActive ? " active" : ""}`}
-                        >
-                            <span className="pl-nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </NavLink>
-                    ))}
-                </nav>
+            <AppSidebar />
 
-                <div className="pl-sidebar-user">
-                    <div className="pl-user-avatar">{user?.fullName?.[0]?.toUpperCase() || "C"}</div>
-                    <div className="pl-user-info">
-                        <p className="pl-user-name">{user?.fullName || "Citizen"}</p>
-                        <p className="pl-user-role">Citizen</p>
-                    </div>
-                    <button className="pl-logout-icon" onClick={handleLogout} title="Logout">↪</button>
-                </div>
-            </aside>
             {/* Main */}
-            <main className="pl-main">
-                 
+            <main className="app-main">
                 {/* Header */}
                 <header className="pl-header">
                     <div>
@@ -169,12 +136,9 @@ export default function PetitionsList() {
                     <select
                         className="pl-select"
                         value={location}
-                        onChange={(e) => {
-                            setLocation(e.target.value);
-                            setPage(1);
-                        }}
+                        onChange={(e) => { setLocation(e.target.value); setPage(1); }}
                     >
-                        <option value="">Select City</option>
+                        <option value="">All Cities</option>
                         {cities.map((city, index) => (
                             <option key={`${city.name}-${index}`} value={city.name}>
                                 {city.name}
@@ -183,6 +147,12 @@ export default function PetitionsList() {
                     </select>
 
                     <button className="pl-reset-btn" onClick={resetFilters}>✕ Reset</button>
+
+                    {!loading && (
+                        <span className="pl-count-badge">
+                            {totalCount} petition{totalCount !== 1 ? "s" : ""}
+                        </span>
+                    )}
                 </div>
 
                 {/* Grid */}
