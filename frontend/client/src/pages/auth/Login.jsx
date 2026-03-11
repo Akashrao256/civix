@@ -97,6 +97,9 @@ export default function Login() {
                                 onChange={handleChange}
                                 required
                             />
+                            <Link to="/forgot-password" className="auth-forgot-link">
+                                Forgot password?
+                            </Link>
                         </div>
 
                         {error && <div className="auth-error">{error}</div>}

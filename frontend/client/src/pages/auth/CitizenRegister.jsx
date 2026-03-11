@@ -39,7 +39,7 @@ export default function CitizenRegister() {
             };
 
             await API.post("/auth/register", payload);
-            navigate("/login");
+            navigate("/verify-otp", { state: { email: form.email, role } });
         } catch (err) {
             setError(err.response?.data?.message || "Registration failed. Please try again.");
         } finally {

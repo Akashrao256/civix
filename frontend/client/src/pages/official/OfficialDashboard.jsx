@@ -2,23 +2,25 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import AppSidebar from "../../components/AppSidebar";
 
 const STATUS_COLORS = {
-  active: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
-  under_review: { bg: "#fef9c3", color: "#b45309", dot: "#f59e0b" },
-  closed: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
+    active: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
+    under_review: { bg: "#fef9c3", color: "#b45309", dot: "#f59e0b" },
+    closed: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
 };
 const STATUS_LABELS = {
-  active: "Active",
-  under_review: "Under Review",
-  closed: "Closed",
+    active: "Active",
+    under_review: "Under Review",
+    closed: "Closed",
 };
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
-const STATUSES = ["All", "Active", "Under Review", "Closed"];
+const STATUSES = ["All", "active", "under_review", "closed"];
+const FILTER_STATUS_LABELS = { All: "All", active: "Active", under_review: "Under Review", closed: "Closed" };
 
 export default function OfficialDashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [petitions, setPetitions] = useState([]);
@@ -29,7 +31,6 @@ export default function OfficialDashboard() {
     const [search, setSearch] = useState("");
     const [updating, setUpdating] = useState(null);
     const [toast, setToast] = useState(null);
-    const [activeNav, setActiveNav] = useState("Dashboard");
 
     const showToast = (message, type = "success") => {
         setToast({ message, type });
@@ -44,9 +45,9 @@ export default function OfficialDashboard() {
             setPetitions(list);
             setStats({
                 total: list.length,
-                active: list.filter(p => p.status === "Active").length,
-                review: list.filter(p => p.status === "Under Review").length,
-                closed: list.filter(p => p.status === "Closed").length,
+                active: list.filter(p => p.status === "active").length,
+                review: list.filter(p => p.status === "under_review").length,
+                closed: list.filter(p => p.status === "closed").length,
             });
         } catch (err) {
             console.error(err);
@@ -65,34 +66,19 @@ export default function OfficialDashboard() {
                 prev.map(p => p._id === petitionId ? { ...p, status: newStatus } : p)
             );
             setStats(prev => {
-    const oldPetition = petitions.find(p => p._id === petitionId);
-    if (!oldPetition) return prev;
-
-    const updated = { ...prev };
-
-    if (oldPetition.status !== newStatus) {
-
-        if (oldPetition.status === "active" && updated.active > 0)
-            updated.active--;
-
-        if (oldPetition.status === "under_review" && updated.review > 0)
-            updated.review--;
-
-        if (oldPetition.status === "closed" && updated.closed > 0)
-            updated.closed--;
-
-        if (newStatus === "active")
-            updated.active++;
-
-        if (newStatus === "under_review")
-            updated.review++;
-
-        if (newStatus === "closed")
-            updated.closed++;
-    }
-
-    return updated;
-});
+                const oldPetition = petitions.find(p => p._id === petitionId);
+                if (!oldPetition) return prev;
+                const updated = { ...prev };
+                if (oldPetition.status !== newStatus) {
+                    if (oldPetition.status === "active" && updated.active > 0) updated.active--;
+                    if (oldPetition.status === "under_review" && updated.review > 0) updated.review--;
+                    if (oldPetition.status === "closed" && updated.closed > 0) updated.closed--;
+                    if (newStatus === "active") updated.active++;
+                    if (newStatus === "under_review") updated.review++;
+                    if (newStatus === "closed") updated.closed++;
+                }
+                return updated;
+            });
             showToast("Petition status updated successfully!");
         } catch (err) {
             showToast(err.response?.data?.message || "Failed to update status.", "error");
@@ -100,8 +86,6 @@ export default function OfficialDashboard() {
             setUpdating(null);
         }
     };
-
-    const handleLogout = () => { logout(); navigate("/login"); };
 
     const filtered = petitions.filter(p => {
         const matchCat = filterCategory === "All" || p.category === filterCategory;
@@ -111,16 +95,8 @@ export default function OfficialDashboard() {
         return matchCat && matchStatus && matchSearch;
     });
 
-    const navItems = [
-        { icon: "⊞", label: "Dashboard" },
-        { icon: "📋", label: "Petitions" },
-        { icon: "📊", label: "Analytics" },
-        { icon: "👥", label: "Citizens" },
-        { icon: "⚙️", label: "Settings" },
-    ];
-
     return (
-        <div className="od-layout">
+        <div className="app-layout">
             {/* Toast */}
             {toast && (
                 <div className={`od-toast ${toast.type === "error" ? "od-toast-error" : ""}`}>
@@ -128,43 +104,10 @@ export default function OfficialDashboard() {
                 </div>
             )}
 
-            {/* Sidebar */}
-            <aside className="od-sidebar">
-                <div className="od-sidebar-brand">
-                    <span className="od-brand-icon">⚖️</span>
-                    <div>
-                        <h2>Civix</h2>
-                        <p>Official Portal</p>
-                    </div>
-                </div>
-
-                <nav className="od-nav">
-                    {navItems.map(item => (
-                        <button
-                            key={item.label}
-                            className={`od-nav-item ${activeNav === item.label ? "active" : ""}`}
-                            onClick={() => setActiveNav(item.label)}
-                        >
-                            <span className="od-nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </button>
-                    ))}
-                </nav>
-
-                <div className="od-sidebar-user">
-                    <div className="od-user-avatar">
-                        {user?.fullName?.[0]?.toUpperCase() || "O"}
-                    </div>
-                    <div className="od-user-info">
-                        <p className="od-user-name">{user?.fullName || "Official"}</p>
-                        <p className="od-user-role">Government Official</p>
-                    </div>
-                    <button className="od-logout-icon" onClick={handleLogout} title="Logout">↪</button>
-                </div>
-            </aside>
+            <AppSidebar />
 
             {/* Main Content */}
-            <main className="od-main">
+            <main className="app-main">
                 {/* Header */}
                 <header className="od-header">
                     <div>
@@ -198,23 +141,27 @@ export default function OfficialDashboard() {
                 </div>
 
                 {/* Filters */}
-                <div className="od-filters">
-                    <div className="od-search-wrap">
-                        <span className="od-search-icon">🔍</span>
+                <div className="pl-filters">
+                    <div className="pl-search-wrap">
+                        <span className="pl-search-icon">🔍</span>
                         <input
-                            className="od-search"
+                            className="pl-search"
                             placeholder="Search by title or location..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
-                    <select className="od-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
-                        {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                    <select className="pl-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <select className="od-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                        {STATUSES.map(s => <option key={s}>{s}</option>)}
+                    <select className="pl-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                        {STATUSES.map(s => <option key={s} value={s}>{FILTER_STATUS_LABELS[s]}</option>)}
                     </select>
-                    <div className="od-filter-count">{filtered.length} petition{filtered.length !== 1 ? "s" : ""}</div>
+                    {!loading && (
+                        <span className="pl-count-badge">
+                            {filtered.length} petition{filtered.length !== 1 ? "s" : ""}
+                        </span>
+                    )}
                 </div>
 
                 {/* Petitions Table */}
@@ -242,7 +189,7 @@ export default function OfficialDashboard() {
                             </thead>
                             <tbody>
                                 {filtered.map((p, i) => {
-                                    const sc = STATUS_COLORS[p.status] || STATUS_COLORS["Active"];
+                                    const sc = STATUS_COLORS[p.status] || STATUS_COLORS.active;
                                     return (
                                         <tr key={p._id} className="od-table-row" style={{ animationDelay: `${i * 0.04}s` }}>
                                             <td>

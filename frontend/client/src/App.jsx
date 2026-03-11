@@ -3,9 +3,10 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OfficialRoute from "./components/OfficialRoute";
 import Login from "./pages/auth/Login";
-/*import Register from "./pages/auth/Register";*/
 import CitizenRegister from "./pages/auth/CitizenRegister";
 import OfficialRegister from "./pages/auth/OfficialRegister";
+import VerifyOTP from "./pages/auth/VerifyOTP";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import OfficialDashboard from "./pages/official/OfficialDashboard";
 import PetitionsList from "./pages/petitions/PetitionsList";
@@ -19,12 +20,18 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
-          
+
+          {/* Registration */}
+          <Route path="/register" element={<Navigate to="/register/citizen" replace />} />
           <Route path="/register/citizen" element={<CitizenRegister />} />
           <Route path="/register/official" element={<OfficialRegister />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
 
-          {/* Petition Routes */}
+          {/* Password Reset */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* Citizen Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/petitions" element={<ProtectedRoute><PetitionsList /></ProtectedRoute>} />
           <Route path="/petitions/create" element={<ProtectedRoute><CreatePetition /></ProtectedRoute>} />
           <Route path="/petitions/:id/edit" element={<ProtectedRoute><EditPetition /></ProtectedRoute>} />
