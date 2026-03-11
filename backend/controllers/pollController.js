@@ -2,7 +2,6 @@ const Poll = require("../models/Poll");
 const Vote = require("../models/Vote");
 const mongoose = require("mongoose");
 
-
 /* ======================================
    CREATE POLL
 ====================================== */
@@ -12,7 +11,7 @@ exports.createPoll = async (req, res) => {
 
     if (!question || !options || options.length < 2) {
       return res.status(400).json({
-        message: "Poll must contain question and at least 2 options"
+        message: "Poll must contain question and at least 2 options",
       });
     }
 
@@ -20,19 +19,17 @@ exports.createPoll = async (req, res) => {
       question,
       options,
       targetLocation,
-      createdBy: req.user.id
+      createdBy: req.user.id,
     });
 
     res.status(201).json({
       message: "Poll created successfully",
-      poll
+      poll,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ======================================
    GET ALL POLLS
@@ -49,12 +46,10 @@ exports.getPolls = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json(polls);
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ======================================
    VOTE IN POLL
@@ -81,30 +76,33 @@ exports.votePoll = async (req, res) => {
 
     const existingVote = await Vote.findOne({
       poll: pollId,
-      user: userId
+      user: userId,
     });
 
     if (existingVote) {
-      return res.status(400).json({
-        message: "You have already voted in this poll"
+      return res.status(409).json({
+        message: "You have already voted in this poll",
       });
     }
 
     await Vote.create({
       poll: pollId,
       user: userId,
-      selectedOption
+      selectedOption,
     });
 
-    res.status(201).json({
-      message: "Vote submitted successfully"
+    res.status(200).json({
+      message: "Vote submitted successfully",
     });
-
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "User already voted in this poll",
+      });
+    }
     res.status(500).json({ message: error.message });
   }
 };
-
 
 /* ======================================
    GET POLL RESULTS (For Graph)
@@ -112,6 +110,10 @@ exports.votePoll = async (req, res) => {
 exports.getPollResults = async (req, res) => {
   try {
     const pollId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(pollId)) {
+      return res.status(400).json({ message: "Invalid Poll ID" });
+    }
 
     const poll = await Poll.findById(pollId);
 
@@ -121,30 +123,29 @@ exports.getPollResults = async (req, res) => {
 
     const results = await Vote.aggregate([
       {
-        $match: { poll: new mongoose.Types.ObjectId(pollId) }
+        $match: { poll: new mongoose.Types.ObjectId(pollId) },
       },
       {
         $group: {
           _id: "$selectedOption",
-          votes: { $sum: 1 }
-        }
-      }
+          votes: { $sum: 1 },
+        },
+      },
     ]);
 
-    const formattedResults = poll.options.map(option => {
-      const found = results.find(r => r._id === option);
+    const formattedResults = poll.options.map((option) => {
+      const found = results.find((r) => r._id === option);
       return {
         option,
-        votes: found ? found.votes : 0
+        votes: found ? found.votes : 0,
       };
     });
 
     res.json({
       pollId,
       question: poll.question,
-      results: formattedResults
+      results: formattedResults,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
