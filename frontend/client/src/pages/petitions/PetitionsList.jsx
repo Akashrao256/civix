@@ -17,6 +17,7 @@ export default function PetitionsList() {
     const [petitions, setPetitions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [signing, setSigning] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
     const [toast, setToast] = useState(null);
     const [totalCount, setTotalCount] = useState(0);
 
@@ -80,6 +81,20 @@ export default function PetitionsList() {
             showToast(err.response?.data?.message || "Failed to sign petition.", "error");
         } finally {
             setSigning(null);
+        }
+    };
+
+    const handleDelete = async (petitionId) => {
+        if (!window.confirm("Are you sure you want to delete this petition?")) return;
+        setDeletingId(petitionId);
+        try {
+            await API.delete(`/petitions/${petitionId}`);
+            showToast("🗑️ Petition deleted successfully!");
+            fetchPetitions();
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to delete petition.", "error");
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -178,6 +193,8 @@ export default function PetitionsList() {
                                 currentUser={user}
                                 onSign={handleSign}
                                 signing={signing === p._id}
+                                onDelete={handleDelete}
+                                deleting={deletingId === p._id}
                                 index={i}
                             />
                         ))}

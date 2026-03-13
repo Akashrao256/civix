@@ -5,6 +5,8 @@ const CITIZEN_NAV = [
     { icon: "⊞", label: "Dashboard", to: "/dashboard" },
     { icon: "📋", label: "Petitions", to: "/petitions" },
     { icon: "✍️", label: "Create Petition", to: "/petitions/create" },
+    { icon: "📊", label: "Polls", to: "/polls" },
+    { icon: "📝", label: "Create Poll", to: "/polls/create" },
 ];
 
 const OFFICIAL_NAV = [

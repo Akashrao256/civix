@@ -1692,17 +1692,23 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .pc-btn {
   border: none;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 9px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   font-family: "Poppins", sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .pc-sign-btn {
@@ -1728,6 +1734,40 @@ body {
 
 .pc-edit-btn:hover {
   background: #e2e8f0;
+}
+
+.pc-download-btn {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.pc-download-btn:hover {
+  background: #2563eb;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.pc-delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+.pc-delete-btn:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.pc-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pc-signed-badge {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .pc-closed-badge {

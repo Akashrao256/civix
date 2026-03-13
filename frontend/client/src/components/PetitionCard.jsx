@@ -15,16 +15,30 @@ const CATEGORY_COLORS = {
   Other: "#f1f5f9",
 };
 
-export default function PetitionCard({ petition, currentUser, onSign, signing, index = 0 }) {
+export default function PetitionCard({ petition, currentUser, onSign, signing, onDelete, deleting, index = 0 }) {
   const navigate = useNavigate();
   const st = STATUS_STYLES[petition.status] || STATUS_STYLES.active;
   const catColor = CATEGORY_COLORS[petition.category] || "#f1f5f9";
 
   const isOwner =
     currentUser &&
-    (petition.creator?._id === currentUser.id || petition.creator === currentUser.id);
+    (petition.creator?._id === (currentUser._id || currentUser.id) || petition.creator === (currentUser._id || currentUser.id));
   const isCitizen = currentUser?.role === "citizen";
   const isClosed = petition.status === "closed";
+  const hasSigned = petition.hasSigned;
+
+  const handleDownload = () => {
+    const content = `Title: ${petition.title}\nCategory: ${petition.category}\nLocation: ${petition.location}\nStatus: ${st.label}\nSignatures: ${petition.signatureCount ?? 0}\n\nDescription:\n${petition.description}`;
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `petition-${petition._id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div
@@ -69,6 +83,31 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, i
         </div>
 
         <div className="pc-actions">
+          {/* Sign – only citizens */}
+          {isCitizen && !isOwner && !isClosed && !hasSigned && (
+            <button
+              className="pc-btn pc-sign-btn"
+              onClick={() => onSign(petition._id)}
+              disabled={signing}
+            >
+              {signing ? "⟳" : "✍️ Sign"}
+            </button>
+          )}
+
+          {/* Already Signed Badge */}
+          {isCitizen && hasSigned && !isClosed && (
+            <span className="pc-signed-badge">
+              ✅ Signed
+            </span>
+          )}
+
+          {/* Download – only creator */}
+          {isOwner && (
+            <button className="pc-btn pc-download-btn" onClick={handleDownload} title="Download Petition Details">
+              📥 Download
+            </button>
+          )}
+
           {/* Edit – only creator, not closed */}
           {isOwner && !isClosed && (
             <button
@@ -79,14 +118,15 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, i
             </button>
           )}
 
-          {/* Sign – only citizens */}
-          {isCitizen && !isOwner && !isClosed && (
+          {/* Delete – only creator, pending */}
+          {isOwner && petition.status === "pending" && (
             <button
-              className="pc-btn pc-sign-btn"
-              onClick={() => onSign(petition._id)}
-              disabled={signing}
+              className="pc-btn pc-delete-btn"
+              onClick={() => onDelete(petition._id)}
+              disabled={deleting}
+              title="Delete Petition"
             >
-              {signing ? "⟳" : "✍️ Sign"}
+              {deleting ? "⟳" : "🗑️ Delete"}
             </button>
           )}
 

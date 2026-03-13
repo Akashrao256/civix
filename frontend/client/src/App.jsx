@@ -12,6 +12,9 @@ import OfficialDashboard from "./pages/official/OfficialDashboard";
 import PetitionsList from "./pages/petitions/PetitionsList";
 import CreatePetition from "./pages/petitions/CreatePetition";
 import EditPetition from "./pages/petitions/EditPetition";
+import PollList from "./pages/polls/PollList";
+import CreatePoll from "./pages/polls/CreatePoll";
+import PollResults from "./pages/polls/PollResults";
 
 export default function App() {
   return (
@@ -35,6 +38,11 @@ export default function App() {
           <Route path="/petitions" element={<ProtectedRoute><PetitionsList /></ProtectedRoute>} />
           <Route path="/petitions/create" element={<ProtectedRoute><CreatePetition /></ProtectedRoute>} />
           <Route path="/petitions/:id/edit" element={<ProtectedRoute><EditPetition /></ProtectedRoute>} />
+
+          {/* Poll Routes */}
+          <Route path="/polls" element={<ProtectedRoute><PollList /></ProtectedRoute>} />
+          <Route path="/polls/create" element={<ProtectedRoute><CreatePoll /></ProtectedRoute>} />
+          <Route path="/polls/:id/results" element={<ProtectedRoute><PollResults /></ProtectedRoute>} />
 
           {/* Official Routes */}
           <Route path="/official/dashboard" element={<OfficialRoute><OfficialDashboard /></OfficialRoute>} />
