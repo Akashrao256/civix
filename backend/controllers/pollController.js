@@ -15,6 +15,18 @@ exports.createPoll = async (req, res) => {
       });
     }
 
+    // 🔎 Check if poll already exists
+    const existingPoll = await Poll.findOne({
+      question,
+      targetLocation,
+    });
+
+    if (existingPoll) {
+      return res.status(409).json({
+        message: "Poll with this question already exists for this location",
+      });
+    }
+
     const poll = await Poll.create({
       question,
       options,
