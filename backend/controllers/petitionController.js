@@ -97,18 +97,7 @@ exports.getPetitions = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    let requester = null;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ")
-    ) {
-      try {
-        const token = req.headers.authorization.split(" ")[1];
-        requester = jwt.verify(token, process.env.JWT_SECRET);
-      } catch (error) {
-        requester = null;
-      }
-    }
+    const requester = req.user || null;
 
     const conditions = [];
 
@@ -123,16 +112,16 @@ exports.getPetitions = async (req, res) => {
       }
     }
 
-    if (location) conditions.push({ location: { $regex: location, $options: "i" } });
+    if (location)
+      conditions.push({ location: { $regex: location, $options: "i" } });
 
-    if (category) conditions.push({ category: { $regex: category, $options: "i" } });
+    if (category)
+      conditions.push({ category: { $regex: category, $options: "i" } });
 
     if (status) conditions.push({ status });
 
     const filter =
-      conditions.length > 1
-        ? { $and: conditions }
-        : conditions[0] || {};
+      conditions.length > 1 ? { $and: conditions } : conditions[0] || {};
 
     const petitions = await Petition.find(filter)
       .populate("creator", "fullName email")
@@ -245,6 +234,57 @@ exports.updateStatus = async (req, res) => {
     res.status(200).json({
       message: "Status updated successfully",
       petition,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ===================================================
+   RESPOND TO PETITION (Official Only)
+=================================================== */
+exports.respondToPetition = async (req, res) => {
+  try {
+    const petitionId = req.params.id;
+    const { message } = req.body;
+    const user = req.user;
+
+    if (!mongoose.Types.ObjectId.isValid(petitionId)) {
+      return res.status(400).json({ message: "Invalid Petition ID" });
+    }
+
+    const petition = await Petition.findById(petitionId);
+
+    if (!petition || petition.isDeleted) {
+      return res.status(404).json({ message: "Petition not found" });
+    }
+
+    if (user.role !== "official") {
+      return res.status(403).json({
+        message: "Only officials can respond to petitions",
+      });
+    }
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ message: "Response message is required" });
+    }
+    if (!petition.responses) {
+      petition.responses = [];
+    }
+    petition.responses.push({
+      message: message.trim(),
+      respondedBy: user.id,
+    });
+
+    await petition.save();
+
+    const updatedPetition = await Petition.findById(petitionId)
+      .populate("creator", "fullName email")
+      .populate("responses.respondedBy", "fullName email");
+
+    res.status(200).json({
+      message: "Response added successfully",
+      petition: updatedPetition,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

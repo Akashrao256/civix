@@ -48,6 +48,29 @@ const petitionSchema = new mongoose.Schema(
     deletedAt: {
       type: Date,
     },
+
+    // ✅ ADD HERE (inside schema)
+    responses: {
+      type: [
+        {
+          message: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          respondedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true },
 );

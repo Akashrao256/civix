@@ -13,7 +13,9 @@ exports.registerUser = async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be 6+ characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be 6+ characters" });
     }
 
     const userExists = await User.findOne({ email });
@@ -36,13 +38,13 @@ exports.registerUser = async (req, res) => {
       otp,
       otpExpires,
       isVerified: false,
-      isApproved: role !== "official"
+      isApproved: role !== "official",
     });
 
     await sendEmail(
       email,
       "Your Civix OTP Verification Code",
-      `Your OTP is ${otp}. It will expire in 10 minutes.`
+      `Your OTP is ${otp}. It will expire in 10 minutes.`,
     );
 
     res.status(201).json({
@@ -52,11 +54,9 @@ exports.registerUser = async (req, res) => {
           : "User Registered Successfully. OTP sent to email.",
       user,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-
 };
 
 // VERIFY OTP
@@ -105,7 +105,7 @@ exports.loginUser = async (req, res) => {
 
     if (user.role === "official" && !user.isApproved) {
       return res.status(403).json({
-        message: "Account waiting for admin approval"
+        message: "Account waiting for admin approval",
       });
     }
 
@@ -116,20 +116,25 @@ exports.loginUser = async (req, res) => {
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({ message: "Please verify your email before logging in." });
+      return res
+        .status(403)
+        .json({ message: "Please verify your email before logging in." });
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+        location: user.location,
+      },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.json({
       token,
-      user
+      user,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -148,7 +153,8 @@ exports.forgotPassword = async (req, res) => {
 
     if (!user) {
       return res.status(200).json({
-        message: "If an account exists with this email, reset OTP has been sent.",
+        message:
+          "If an account exists with this email, reset OTP has been sent.",
       });
     }
 
@@ -161,7 +167,7 @@ exports.forgotPassword = async (req, res) => {
     await sendEmail(
       email,
       "Your Civix Password Reset OTP",
-      `Your password reset OTP is ${resetOtp}. It will expire in 10 minutes.`
+      `Your password reset OTP is ${resetOtp}. It will expire in 10 minutes.`,
     );
 
     res.status(200).json({
@@ -209,7 +215,9 @@ exports.resetPassword = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and new password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and new password are required" });
     }
 
     const user = await User.findOne({ email });
@@ -219,11 +227,15 @@ exports.resetPassword = async (req, res) => {
     }
 
     if (!user.resetOtpVerified) {
-      return res.status(400).json({ message: "Please verify reset OTP before resetting password." });
+      return res.status(400).json({
+        message: "Please verify reset OTP before resetting password.",
+      });
     }
 
     if (!user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
-      return res.status(400).json({ message: "Reset OTP expired. Please request a new OTP." });
+      return res
+        .status(400)
+        .json({ message: "Reset OTP expired. Please request a new OTP." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -235,7 +247,9 @@ exports.resetPassword = async (req, res) => {
     user.passwordResetExpire = undefined;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successful. Please login." });
+    res
+      .status(200)
+      .json({ message: "Password reset successful. Please login." });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

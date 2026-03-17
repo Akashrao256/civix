@@ -8,6 +8,7 @@ const {
   getPetitions,
   updatePetition,
   updateStatus,
+  respondToPetition,
   deletePetition
 } = require("../controllers/petitionController");
 
@@ -18,6 +19,7 @@ router.post("/", protect, createPetition);
 
 router.put("/:id", protect, updatePetition);
 router.delete("/:id", protect, deletePetition);
+router.post("/:id/respond", protect, respondToPetition);
 
 router.post("/:id/sign", protect, signPetition);
 
