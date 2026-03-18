@@ -92,6 +92,38 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
+// RESEND OTP
+exports.resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    await sendEmail(
+      email,
+      "Your Civix OTP Verification Code",
+      `Your OTP is ${otp}. It will expire in 10 minutes.`,
+    );
+
+    res.status(200).json({ message: "OTP resent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // LOGIN
 exports.loginUser = async (req, res) => {
   try {
