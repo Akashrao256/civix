@@ -41,6 +41,7 @@ export default function OfficialRegister() {
             };
 
             await API.post("/auth/register", payload);
+            localStorage.setItem("email", form.email);
             navigate("/verify-otp", { state: { email: form.email, role } });
 
         } catch (err) {
