@@ -8,11 +8,14 @@ export default function PollList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const navigate = useNavigate();
-
+    const [selectedOptions, setSelectedOptions] = useState({});
     useEffect(() => {
         fetchPolls();
     }, []);
-
+    useEffect(() => {
+        const savedVotes = JSON.parse(localStorage.getItem("votes")) || {};
+        setSelectedOptions(savedVotes);
+    }, []);
     const fetchPolls = async () => {
         try {
             const res = await API.get("/polls");
@@ -41,9 +44,34 @@ export default function PollList() {
             <div className="app-main">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                     <h2>Active Polls</h2>
-                    <button className="btn-primary" onClick={() => navigate("/polls/create")}>
-                        + Create Poll
-                    </button>
+                    <>
+                        <style>
+                            {`
+      .btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        padding: 12px 22px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #4338ca, #4f46e5);
+      }
+    `}
+                        </style>
+
+                        <button
+                            className="btn-primary"
+                            onClick={() => navigate("/polls/create")}
+                        >
+                            Create poll
+                        </button>
+                    </>
                 </div>
 
                 {error && <div className="error-message">{error}</div>}
@@ -70,32 +98,39 @@ export default function PollList() {
                                     {poll.options.map((option, idx) => (
                                         <button
                                             key={idx}
-                                            onClick={() => handleVote(poll._id, option)}
+                                            onClick={() => {
+                                                const previousVote = selectedOptions[poll._id];
+
+                                                // if already voted, don't change highlight
+                                                if (previousVote) {
+                                                    alert("You've already voted in this poll");
+                                                    return;
+                                                }
+                                                const updatedVotes = {
+                                                    ...selectedOptions,
+                                                    [poll._id]: option
+                                                };
+
+                                                setSelectedOptions(updatedVotes);
+                                                localStorage.setItem("votes", JSON.stringify(updatedVotes)); // ✅ SAVE
+
+                                                handleVote(poll._id, option);
+                                            }}
                                             style={{
                                                 display: "block",
                                                 width: "100%",
                                                 padding: "14px 16px",
                                                 marginBottom: "10px",
-                                                border: "1px solid #e2e8f0",
                                                 borderRadius: "10px",
-                                                background: "#f8fafc",
                                                 textAlign: "left",
                                                 cursor: "pointer",
                                                 fontSize: "14px",
                                                 fontWeight: "500",
-                                                color: "#334155",
                                                 transition: "all 0.2s",
-                                                boxShadow: "0 2px 4px rgba(0,0,0,0.01)"
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.target.style.background = "#fff";
-                                                e.target.style.borderColor = "#6366f1";
-                                                e.target.style.boxShadow = "0 4px 12px rgba(99, 102, 241, 0.1)";
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.target.style.background = "#f8fafc";
-                                                e.target.style.borderColor = "#e2e8f0";
-                                                e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.01)";
+
+                                                background: selectedOptions[poll._id] === option ? "#6366f1" : "#f8fafc",
+                                                color: selectedOptions[poll._id] === option ? "#fff" : "#334155",
+                                                border: selectedOptions[poll._id] === option ? "1px solid #6366f1" : "1px solid #e2e8f0",
                                             }}
                                         >
                                             {option}
