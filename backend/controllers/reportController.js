@@ -1,48 +1,42 @@
-const Petition = require("../models/Petition");
-const Signature = require("../models/Signature");
-const Poll = require("../models/Poll");
-const Vote = require("../models/Vote");
+const { getMonthlyReportData } = require("../services/reportService");
+const { generateCSV, generatePDF } = require("../utils/reportGenerator");
 
+// GET JSON Report
 exports.getMonthlyReport = async (req, res) => {
   try {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const createdAtFilter = {
-      createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-    };
 
-    const [
-      totalPetitions,
-      activePetitions,
-      closedPetitions,
-      pendingPetitions,
-      underReviewPetitions,
-      totalSignatures,
-      totalPolls,
-      totalVotes,
-    ] = await Promise.all([
-      Petition.countDocuments(createdAtFilter),
-      Petition.countDocuments({ ...createdAtFilter, status: "active" }),
-      Petition.countDocuments({ ...createdAtFilter, status: "closed" }),
-      Petition.countDocuments({ ...createdAtFilter, status: "pending" }),
-      Petition.countDocuments({ ...createdAtFilter, status: "under_review" }),
-      Signature.countDocuments(createdAtFilter),
-      Poll.countDocuments(createdAtFilter),
-      Vote.countDocuments(createdAtFilter),
-    ]);
+    const report = await getMonthlyReportData();
 
-    res.status(200).json({
-      month: now.toLocaleString("en-US", { month: "long" }),
-      totalPetitions,
-      activePetitions,
-      closedPetitions,
-      pendingPetitions,
-      underReviewPetitions,
-      totalSignatures,
-      totalPolls,
-      totalVotes,
-    });
+    res.status(200).json(report);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// Export CSV
+exports.exportCSV = async (req, res) => {
+  try {
+
+    const report = await getMonthlyReportData();
+
+    return generateCSV(report, res);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// Export PDF
+exports.exportPDF = async (req, res) => {
+  try {
+
+    const report = await getMonthlyReportData();
+
+    return generatePDF(report, res);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
