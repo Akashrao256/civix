@@ -1,7 +1,13 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const sendEmail = require("../utils/sendEmail");
+const {
+  assignRegistrationOtp,
+  assignResetOtp,
+  verifyRegistrationOtp,
+  verifyPasswordResetOtp,
+} = require("../services/otpService");
+const { deliverOtp } = require("../services/otpDeliveryService");
 
 // REGISTER
 exports.registerUser = async (req, res) => {
@@ -26,8 +32,6 @@ exports.registerUser = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = Date.now() + 10 * 60 * 1000;
 
     const user = await User.create({
       fullName,
@@ -35,17 +39,14 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       location,
       role,
-      otp,
-      otpExpires,
       isVerified: false,
       isApproved: role !== "official",
     });
 
-    await sendEmail(
-      email,
-      "Your Civix OTP Verification Code",
-      `Your OTP is ${otp}. It will expire in 10 minutes.`,
-    );
+    const otp = assignRegistrationOtp(user);
+    await user.save({ validateBeforeSave: false });
+
+    await deliverOtp({ email, otp, type: "registration" });
 
     res.status(201).json({
       message:
@@ -73,12 +74,9 @@ exports.verifyOTP = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user.otp || user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-
-    if (!user.otpExpires || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "OTP expired" });
+    const otpCheck = verifyRegistrationOtp(user, otp);
+    if (!otpCheck.valid) {
+      return res.status(400).json({ message: otpCheck.message });
     }
 
     user.isVerified = true;
@@ -107,16 +105,10 @@ exports.resendOtp = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.otp = otp;
-    user.otpExpires = Date.now() + 10 * 60 * 1000;
+    const otp = assignRegistrationOtp(user);
     await user.save({ validateBeforeSave: false });
 
-    await sendEmail(
-      email,
-      "Your Civix OTP Verification Code",
-      `Your OTP is ${otp}. It will expire in 10 minutes.`,
-    );
+    await deliverOtp({ email, otp, type: "registration" });
 
     res.status(200).json({ message: "OTP resent successfully" });
   } catch (error) {
@@ -190,17 +182,10 @@ exports.forgotPassword = async (req, res) => {
       });
     }
 
-    const resetOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetOtp = resetOtp;
-    user.resetOtpExpires = Date.now() + 10 * 60 * 1000;
-    user.resetOtpVerified = false;
+    const resetOtp = assignResetOtp(user);
     await user.save({ validateBeforeSave: false });
 
-    await sendEmail(
-      email,
-      "Your Civix Password Reset OTP",
-      `Your password reset OTP is ${resetOtp}. It will expire in 10 minutes.`,
-    );
+    await deliverOtp({ email, otp: resetOtp, type: "reset" });
 
     res.status(200).json({
       message: "Password reset OTP sent successfully.",
@@ -224,12 +209,9 @@ exports.verifyResetOTP = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user.resetOtp || user.resetOtp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-
-    if (!user.resetOtpExpires || user.resetOtpExpires < Date.now()) {
-      return res.status(400).json({ message: "OTP expired" });
+    const otpCheck = verifyPasswordResetOtp(user, otp);
+    if (!otpCheck.valid) {
+      return res.status(400).json({ message: otpCheck.message });
     }
 
     user.resetOtpVerified = true;
