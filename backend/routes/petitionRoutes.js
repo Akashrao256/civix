@@ -13,7 +13,7 @@ const {
 } = require("../controllers/petitionController");
 
 
-router.get("/", getPetitions);
+router.get("/", protect, getPetitions);
 
 router.post("/", protect, createPetition);
 
