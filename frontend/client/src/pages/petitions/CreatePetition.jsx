@@ -57,6 +57,7 @@ export default function CreatePetition() {
                         <NavLink
                             key={item.label}
                             to={item.to}
+                            end
                             className={({ isActive }) => `pl-nav-item${isActive ? " active" : ""}`}
                         >
                             <span className="pl-nav-icon">{item.icon}</span>

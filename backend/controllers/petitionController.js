@@ -97,19 +97,14 @@ exports.getPetitions = async (req, res) => {
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
 
-    const requester = req.user || null;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
+    const conditions = [{ isDeleted: false }];
 
-    const conditions = [];
-
-    if (requester?.role !== "official") {
-      conditions.push({ isDeleted: false });
-      if (requester?.role === "citizen") {
-        conditions.push({
-          $or: [{ status: "active" }, { creator: requester.id }],
-        });
-      } else {
-        conditions.push({ status: "active" });
-      }
+    if (role === "citizen" && userId) {
+      conditions.push({
+        $or: [{ status: "active" }, { creator: userId }],
+      });
     }
 
     if (location)
@@ -118,7 +113,9 @@ exports.getPetitions = async (req, res) => {
     if (category)
       conditions.push({ category: { $regex: category, $options: "i" } });
 
-    if (status) conditions.push({ status });
+    if (status && role === "official") {
+      conditions.push({ status });
+    }
 
     const filter =
       conditions.length > 1 ? { $and: conditions } : conditions[0] || {};

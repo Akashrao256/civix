@@ -41,6 +41,7 @@ export default function AppSidebar() {
                     <NavLink
                         key={item.label}
                         to={item.to}
+                        end
                         className={({ isActive }) =>
                             `app-nav-item${isActive ? " active" : ""}`
                         }
