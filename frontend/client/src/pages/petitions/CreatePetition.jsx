@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import AppSidebar from "../../components/AppSidebar";
 
 const CATEGORIES = ["Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 
 export default function CreatePetition() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [form, setForm] = useState({ title: "", description: "", category: "", location: "" });
@@ -35,54 +36,32 @@ export default function CreatePetition() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate("/login"); };
-
     return (
-        <div className="pl-layout">
-            {/* Sidebar */}
-            <aside className="pl-sidebar">
-                <div className="pl-sidebar-brand">
-                    <span className="pl-brand-icon">⚖️</span>
+        <div className="app-layout">
+            <AppSidebar />
+            
+            <main className="app-main">
+                <header className="pl-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                     <div>
-                        <h2>Civix</h2>
-                        <p>Citizen Portal</p>
+                        <h1 className="pl-header-title" style={{ fontSize: '26px', fontWeight: '700', color: '#1e1b4b', marginBottom: '4px' }}>✍️ Create a Petition</h1>
+                        <p className="pl-header-sub" style={{ fontSize: '13px', color: '#64748b' }}>Start a campaign for your community</p>
                     </div>
-                </div>
-                <nav className="pl-nav">
-                    {[
-                        { icon: "⊞", label: "Dashboard", to: "/dashboard" },
-                        { icon: "📋", label: "Petitions", to: "/petitions" },
-                        { icon: "✍️", label: "Create Petition", to: "/petitions/create" },
-                    ].map((item) => (
-                        <NavLink
-                            key={item.label}
-                            to={item.to}
-                            end
-                            className={({ isActive }) => `pl-nav-item${isActive ? " active" : ""}`}
-                        >
-                            <span className="pl-nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </NavLink>
-                    ))}
-                </nav>
-                <div className="pl-sidebar-user">
-                    <div className="pl-user-avatar">{user?.fullName?.[0]?.toUpperCase() || "C"}</div>
-                    <div className="pl-user-info">
-                        <p className="pl-user-name">{user?.fullName || "Citizen"}</p>
-                        <p className="pl-user-role">Citizen</p>
-                    </div>
-                    <button className="pl-logout-icon" onClick={handleLogout} title="Logout">↪</button>
-                </div>
-            </aside>
-
-            {/* Main */}
-            <main className="pl-main">
-                <header className="pl-header">
-                    <div>
-                        <h1 className="pl-header-title">✍️ Create a Petition</h1>
-                        <p className="pl-header-sub">Start a campaign for your community</p>
-                    </div>
-                    <button className="pl-back-btn" onClick={() => navigate("/petitions")}>← Back</button>
+                    <button 
+                        className="pl-back-btn" 
+                        onClick={() => navigate("/petitions")}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            background: "transparent",
+                            color: "#64748b",
+                            padding: "8px 12px",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "14px"
+                        }}
+                    >
+                        ← Back
+                    </button>
                 </header>
 
                 <div className="cp-form-wrap">

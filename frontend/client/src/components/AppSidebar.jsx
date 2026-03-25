@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const CITIZEN_NAV = [
@@ -16,6 +16,7 @@ const OFFICIAL_NAV = [
 export default function AppSidebar() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const isOfficial = user?.role === "official";
     const navItems = isOfficial ? OFFICIAL_NAV : CITIZEN_NAV;
 
@@ -41,9 +42,8 @@ export default function AppSidebar() {
                     <NavLink
                         key={item.label}
                         to={item.to}
-                        end
-                        className={({ isActive }) =>
-                            `app-nav-item${isActive ? " active" : ""}`
+                        className={() =>
+                            `app-nav-item${location.pathname === item.to ? " active" : ""}`
                         }
                     >
                         <span className="app-nav-icon">{item.icon}</span>

@@ -88,7 +88,7 @@ export default function VerifyOTP() {
             });
 
             localStorage.removeItem("email");
-            setSuccess("Email verified successfully! Redirecting to login...");
+            setSuccess("✅ Email verified successfully! Redirecting to login...");
             setTimeout(() => navigate("/login", { state: { verified: true } }), 2000);
         } catch (err) {
             setError(err.response?.data?.message || "Invalid OTP. Please try again.");

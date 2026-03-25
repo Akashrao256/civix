@@ -84,7 +84,7 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
 
         <div className="pc-actions">
           {/* Sign – only citizens */}
-          {isCitizen && !isOwner && !isClosed && !hasSigned && (
+          {isCitizen && !isOwner && !isClosed && !hasSigned && onSign && (
             <button
               className="pc-btn pc-sign-btn"
               onClick={() => onSign(petition._id)}
@@ -118,8 +118,8 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
             </button>
           )}
 
-          {/* Delete – only creator, pending */}
-          {isOwner && petition.status === "pending" && (
+          {/* Delete – only creator, pending or active */}
+          {isOwner && (petition.status === "pending" || petition.status === "active") && (
             <button
               className="pc-btn pc-delete-btn"
               onClick={() => onDelete(petition._id)}
