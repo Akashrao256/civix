@@ -312,11 +312,11 @@ exports.deletePetition = async (req, res) => {
 
     if (isOfficial) {
       // Officials can delete any petition
-    } else if (isCreator && petition.status === "pending") {
-      // Creator can only delete pending petitions
+    } else if (isCreator && (petition.status === "pending" || petition.status === "active")) {
+      // Creator can delete pending or active petitions
     } else if (isCreator) {
       return res.status(403).json({
-        message: "You can only delete your petition while it is pending",
+        message: "You can only delete your petition while it is pending or active",
       });
     } else {
       return res.status(403).json({ message: "Not authorized to delete" });

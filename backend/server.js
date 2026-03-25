@@ -13,11 +13,18 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/api/petitions", require("./routes/petitionRoutes"));
-app.use("/api/polls", require("./routes/pollRoutes"));
-app.use("/api/reports", require("./routes/reportRoutes"));
+const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const petitionRoutes = require("./routes/petitionRoutes");
+const pollRoutes = require("./routes/pollRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/petitions", petitionRoutes);
+app.get("/api/polls-test", (req, res) => res.json({ message: "polls test route works" }));
+app.use("/api/polls", pollRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/", (req, res) => {
   res.send("Civix Backend Running...");

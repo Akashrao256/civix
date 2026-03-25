@@ -26,7 +26,7 @@ const petitionSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "under_review", "active", "closed"],
       lowercase: true,
-      default: "pending",
+      default: "active",
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
