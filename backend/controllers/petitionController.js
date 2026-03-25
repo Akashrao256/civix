@@ -99,47 +99,72 @@ exports.getPetitions = async (req, res) => {
 
     const userId = req.user?._id || req.user?.id;
     const role = req.user?.role;
-    const conditions = [{ isDeleted: false }];
+
+    // ---- Build base filter ----
+    let filter = { isDeleted: false };
 
     if (role === "citizen" && userId) {
-      conditions.push({
-        $or: [{ status: "active" }, { creator: userId }],
-      });
+      // Citizen sees: active petitions OR their own petitions (any status)
+      filter = {
+        isDeleted: false,
+        $or: [
+          { status: "active" },
+          { creator: userId },
+        ],
+      };
+    }
+    // Officials see all non-deleted (base filter already covers this)
+
+    // ---- Optional extra filters ----
+    const andConditions = [filter];
+
+    if (location) {
+      andConditions.push({ location: { $regex: location, $options: "i" } });
     }
 
-    if (location)
-      conditions.push({ location: { $regex: location, $options: "i" } });
+    if (category) {
+      andConditions.push({ category: { $regex: category, $options: "i" } });
+    }
 
-    if (category)
-      conditions.push({ category: { $regex: category, $options: "i" } });
-
+    // Status filter — allowed for officials only
     if (status && role === "official") {
-      conditions.push({ status });
+      andConditions.push({ status });
     }
 
-    const filter =
-      conditions.length > 1 ? { $and: conditions } : conditions[0] || {};
+    const finalFilter =
+      andConditions.length > 1 ? { $and: andConditions } : andConditions[0];
 
-    const petitions = await Petition.find(filter)
+    const petitions = await Petition.find(finalFilter)
       .populate("creator", "fullName email")
       .skip(skip)
       .limit(limitNumber)
       .sort({ createdAt: -1 });
 
+    // Enrich with signature count + hasSigned flag
     const petitionsWithCount = await Promise.all(
       petitions.map(async (petition) => {
-        const count = await Signature.countDocuments({
+        const signatureCount = await Signature.countDocuments({
           petition: petition._id,
         });
 
+        let hasSigned = false;
+        if (role === "citizen" && userId) {
+          const sig = await Signature.findOne({
+            petition: petition._id,
+            user: userId,
+          });
+          hasSigned = !!sig;
+        }
+
         return {
           ...petition.toObject(),
-          signatureCount: count,
+          signatureCount,
+          hasSigned,
         };
       }),
     );
 
-    const total = await Petition.countDocuments(filter);
+    const total = await Petition.countDocuments(finalFilter);
 
     res.status(200).json({
       total,

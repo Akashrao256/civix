@@ -9,6 +9,7 @@ import VerifyOTP from "./pages/auth/VerifyOTP";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import OfficialDashboard from "./pages/official/OfficialDashboard";
+import OfficialReports from "./pages/official/OfficialReports";
 import PetitionsList from "./pages/petitions/PetitionsList";
 import CreatePetition from "./pages/petitions/CreatePetition";
 import EditPetition from "./pages/petitions/EditPetition";
@@ -46,6 +47,7 @@ export default function App() {
 
           {/* Official Routes */}
           <Route path="/official/dashboard" element={<OfficialRoute><OfficialDashboard /></OfficialRoute>} />
+          <Route path="/official/reports" element={<OfficialRoute><OfficialReports /></OfficialRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

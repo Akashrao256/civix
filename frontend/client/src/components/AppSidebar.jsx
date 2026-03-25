@@ -11,6 +11,7 @@ const CITIZEN_NAV = [
 
 const OFFICIAL_NAV = [
     { icon: "⊞", label: "Dashboard", to: "/official/dashboard" },
+    { icon: "📊", label: "Reports", to: "/official/reports" },
 ];
 
 export default function AppSidebar() {

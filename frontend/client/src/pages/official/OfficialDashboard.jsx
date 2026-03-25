@@ -40,7 +40,9 @@ export default function OfficialDashboard() {
     const fetchPetitions = async () => {
         try {
             setLoading(true);
-            const res = await API.get("/petitions?limit=100");
+            const userLoc = user?.location ? encodeURIComponent(user.location) : "";
+            const url = userLoc ? `/petitions?limit=100&location=${userLoc}` : "/petitions?limit=100";
+            const res = await API.get(url);
             const list = res.data.petitions || [];
             setPetitions(list);
             setStats({
@@ -56,7 +58,22 @@ export default function OfficialDashboard() {
         }
     };
 
-    useEffect(() => { fetchPetitions(); }, []);
+    useEffect(() => { fetchPetitions(); }, [user?.location]);
+
+    const handleAddResponse = async (petitionId) => {
+        const message = window.prompt("Enter your official response to this petition:");
+        if (!message || !message.trim()) return;
+        setUpdating(petitionId);
+        try {
+            await API.post(`/petitions/${petitionId}/respond`, { message: message.trim() });
+            showToast("✅ Response added successfully!");
+            fetchPetitions();
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to add response.", "error");
+        } finally {
+            setUpdating(null);
+        }
+    };
 
     const handleStatusChange = async (petitionId, newStatus) => {
         setUpdating(petitionId);
@@ -212,17 +229,34 @@ export default function OfficialDashboard() {
                                                 </span>
                                             </td>
                                             <td>
-                                                <select
-                                                    className="od-action-select"
-                                                    value={p.status}
-                                                    disabled={updating === p._id}
-                                                    onChange={e => handleStatusChange(p._id, e.target.value)}
-                                                >
-                                                    <option value="active">Active</option>
-                                                    <option value="under_review">Under Review</option>
-                                                    <option value="closed">Closed</option>
-                                                </select>
-                                                {updating === p._id && <span className="od-updating">⟳</span>}
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                    <select
+                                                        className="od-action-select"
+                                                        value={p.status}
+                                                        disabled={updating === p._id}
+                                                        onChange={e => handleStatusChange(p._id, e.target.value)}
+                                                    >
+                                                        <option value="active">Active</option>
+                                                        <option value="under_review">Under Review</option>
+                                                        <option value="closed">Closed</option>
+                                                    </select>
+                                                    <button 
+                                                        onClick={() => handleAddResponse(p._id)}
+                                                        disabled={updating === p._id}
+                                                        style={{
+                                                            background: "#4f46e5", 
+                                                            color: "#fff", 
+                                                            border: "none", 
+                                                            padding: "6px 12px", 
+                                                            borderRadius: "6px", 
+                                                            cursor: "pointer",
+                                                            fontSize: "13px"
+                                                        }}
+                                                    >
+                                                        💬 Respond
+                                                    </button>
+                                                    {updating === p._id && <span className="od-updating">⟳</span>}
+                                                </div>
                                             </td>
                                         </tr>
                                     );
