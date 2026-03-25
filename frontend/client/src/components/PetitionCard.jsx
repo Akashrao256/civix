@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom";
 
 const STATUS_STYLES = {
+  pending: { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8", label: "Pending" },
   active: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e", label: "Active" },
   under_review: { bg: "#fef9c3", color: "#b45309", dot: "#f59e0b", label: "Under Review" },
   closed: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444", label: "Closed" },
 };
+
+const FALLBACK_STATUS = { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8", label: petition => petition.status || "Unknown" };
 
 const CATEGORY_COLORS = {
   Infrastructure: "#e0e7ff",
@@ -17,7 +20,10 @@ const CATEGORY_COLORS = {
 
 export default function PetitionCard({ petition, currentUser, onSign, signing, onDelete, deleting, index = 0 }) {
   const navigate = useNavigate();
-  const st = STATUS_STYLES[petition.status] || STATUS_STYLES.active;
+  const stRaw = STATUS_STYLES[petition.status];
+  const st = stRaw
+    ? stRaw
+    : { ...FALLBACK_STATUS, label: FALLBACK_STATUS.label(petition) };
   const catColor = CATEGORY_COLORS[petition.category] || "#f1f5f9";
 
   const isOwner =

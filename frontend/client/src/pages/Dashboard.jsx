@@ -18,12 +18,18 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch first page to display recent petitions (limit=6)
         const petitionsRes = await API.get("/petitions?limit=6");
         const list = petitionsRes.data.petitions || [];
         setPetitions(list);
+
+        // Fetch active count separately (all active petitions, no page limit)
+        const activeRes = await API.get("/petitions?status=active&limit=1");
+        const totalActive = activeRes.data.total || 0;
+
         setStats({
           petitions: petitionsRes.data.total || list.length,
-          active: list.filter((p) => p.status === "active").length,
+          active: totalActive,
           signed: list.reduce((sum, p) => sum + (p.signatureCount || 0), 0),
         });
 

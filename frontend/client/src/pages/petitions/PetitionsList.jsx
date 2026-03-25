@@ -55,7 +55,7 @@ export default function PetitionsList() {
             }
 
             setPetitions(list);
-            setTotalCount(list.length);
+            setTotalCount(res.data.total || list.length);
             setTotalPages(res.data.totalPages || 1);
 
         } catch (err) {

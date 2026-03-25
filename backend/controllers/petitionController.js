@@ -16,6 +16,11 @@ exports.createPetition = async (req, res) => {
       });
     }
 
+    const existingPetition = await Petition.findOne({ title: title.trim(), isDeleted: false });
+    if (existingPetition) {
+      return res.status(400).json({ message: "A petition with this title already exists" });
+    }    
+
     const petition = await Petition.create({
       title,
       description,
@@ -101,19 +106,9 @@ exports.getPetitions = async (req, res) => {
     const role = req.user?.role;
 
     // ---- Build base filter ----
-    let filter = { isDeleted: false };
-
-    if (role === "citizen" && userId) {
-      // Citizen sees: active petitions OR their own petitions (any status)
-      filter = {
-        isDeleted: false,
-        $or: [
-          { status: "active" },
-          { creator: userId },
-        ],
-      };
-    }
-    // Officials see all non-deleted (base filter already covers this)
+    // All authenticated users see all non-deleted petitions.
+    // No role-based pre-filtering — citizens can see petitions of all statuses.
+    const filter = { isDeleted: false };
 
     // ---- Optional extra filters ----
     const andConditions = [filter];
@@ -126,8 +121,8 @@ exports.getPetitions = async (req, res) => {
       andConditions.push({ category: { $regex: category, $options: "i" } });
     }
 
-    // Status filter — allowed for officials only
-    if (status && role === "official") {
+    // Status filter — allowed for all roles
+    if (status) {
       andConditions.push({ status });
     }
 
