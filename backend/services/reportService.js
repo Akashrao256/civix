@@ -4,7 +4,6 @@ const Poll = require("../models/Poll");
 const Vote = require("../models/Vote");
 
 exports.getMonthlyReportData = async () => {
-
   const now = new Date();
 
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -35,14 +34,23 @@ exports.getMonthlyReportData = async () => {
   ]);
 
   return {
-    month: now.toLocaleString("en-US", { month: "long" }),
-    totalPetitions,
-    activePetitions,
-    closedPetitions,
-    pendingPetitions,
-    underReviewPetitions,
-    totalSignatures,
-    totalPolls,
-    totalVotes,
+    meta: {
+      month: now.toLocaleString("en-US", { month: "long" }),
+      generatedAt: new Date(),
+    },
+
+    summary: {
+      totalPetitions,
+      totalSignatures,
+      totalPolls,
+      totalVotes,
+    },
+
+    statusBreakdown: {
+      active: activePetitions,
+      pending: pendingPetitions,
+      underReview: underReviewPetitions,
+      closed: closedPetitions,
+    },
   };
 };

@@ -55,4 +55,4 @@ npm run dev
 
 Email: admin@civix.com
 Password: Admin123
-Role: admin
+Role: Official

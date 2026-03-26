@@ -1,23 +1,53 @@
 const { Parser } = require("json2csv");
+const PDFDocument = require("pdfkit");
 
-// CSV
+// =========================
+// ✅ CSV GENERATOR
+// =========================
 exports.generateCSV = (data, res) => {
+  const formattedData = [
+    { Section: "Summary", Metric: "Month", Value: data.meta.month },
 
-  const fields = [
-    "month",
-    "totalPetitions",
-    "activePetitions",
-    "closedPetitions",
-    "pendingPetitions",
-    "underReviewPetitions",
-    "totalSignatures",
-    "totalPolls",
-    "totalVotes"
+    {
+      Section: "Summary",
+      Metric: "Total Petitions",
+      Value: data.summary.totalPetitions,
+    },
+    {
+      Section: "Summary",
+      Metric: "Total Signatures",
+      Value: data.summary.totalSignatures,
+    },
+    {
+      Section: "Summary",
+      Metric: "Total Polls",
+      Value: data.summary.totalPolls,
+    },
+    {
+      Section: "Summary",
+      Metric: "Total Votes",
+      Value: data.summary.totalVotes,
+    },
+
+    { Section: "Status", Metric: "Active", Value: data.statusBreakdown.active },
+    {
+      Section: "Status",
+      Metric: "Pending",
+      Value: data.statusBreakdown.pending,
+    },
+    {
+      Section: "Status",
+      Metric: "Under Review",
+      Value: data.statusBreakdown.underReview,
+    },
+    { Section: "Status", Metric: "Closed", Value: data.statusBreakdown.closed },
   ];
 
-  const parser = new Parser({ fields });
+  const parser = new Parser({
+    fields: ["Section", "Metric", "Value"],
+  });
 
-  const csv = parser.parse([data]); // wrap in array
+  const csv = parser.parse(formattedData);
 
   res.header("Content-Type", "text/csv");
   res.attachment("monthly-report.csv");
@@ -25,30 +55,135 @@ exports.generateCSV = (data, res) => {
   return res.send(csv);
 };
 
-
-const PDFDocument = require("pdfkit");
+// =========================
+// ✅ PDF GENERATOR
+// =========================
 
 exports.generatePDF = (data, res) => {
-
-  const doc = new PDFDocument();
+  const doc = new PDFDocument({ margin: 50 });
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", "attachment; filename=monthly-report.pdf");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=monthly-report.pdf",
+  );
 
   doc.pipe(res);
 
-  doc.fontSize(18).text("Monthly Civic Report", { align: "center" });
+  // =========================
+  // 🔴 HEADER
+  // =========================
+  doc.font("Helvetica-Bold").fontSize(20).text("CIVIX", {
+    align: "center",
+  });
+
+  doc.font("Helvetica").fontSize(14).text("Monthly Civic Report", {
+    align: "center",
+  });
+
+  doc.moveDown(0.5);
+  doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+  doc.moveDown(2);
+
+  doc.fontSize(10).text(`Month: ${data.meta.month}`, {
+    align: "center",
+  });
+
+  doc.text(
+    `Generated on: ${new Date(data.meta.generatedAt).toLocaleDateString()}`,
+    { align: "center" },
+  );
+
   doc.moveDown();
 
-  doc.fontSize(12).text(`Month: ${data.month}`);
-  doc.text(`Total Petitions: ${data.totalPetitions}`);
-  doc.text(`Active Petitions: ${data.activePetitions}`);
-  doc.text(`Closed Petitions: ${data.closedPetitions}`);
-  doc.text(`Pending Petitions: ${data.pendingPetitions}`);
-  doc.text(`Under Review: ${data.underReviewPetitions}`);
-  doc.text(`Total Signatures: ${data.totalSignatures}`);
-  doc.text(`Total Polls: ${data.totalPolls}`);
-  doc.text(`Total Votes: ${data.totalVotes}`);
+  // =========================
+  // 🔴 SUMMARY (2-COLUMN LAYOUT)
+  // =========================
+  doc.font("Helvetica-Bold").fontSize(14).text("Summary");
+  doc.moveDown();
+
+  const leftX = 50;
+  const rightX = 400;
+  let y = doc.y;
+
+  doc.font("Helvetica");
+
+  const summaryRows = [
+    ["Total Petitions", data.summary.totalPetitions],
+    ["Total Signatures", data.summary.totalSignatures],
+    ["Total Polls", data.summary.totalPolls],
+    ["Total Votes", data.summary.totalVotes],
+  ];
+
+  summaryRows.forEach(([label, value]) => {
+    doc.text(label, leftX, y);
+    doc.text(String(value), rightX, y, {
+      width: 100,
+      align: "right",
+    });
+    y += 20;
+  });
+
+  doc.moveDown();
+
+  // Divider
+  doc.moveTo(50, y).lineTo(550, y).stroke();
+  doc.moveDown(2);
+
+  // =========================
+  // 🔴 STATUS TABLE
+  // =========================
+  doc.font("Helvetica-Bold").fontSize(14).text("Petition Status Breakdown");
+  doc.moveDown();
+
+  const col1 = 50;
+  const col2 = 400;
+  let tableY = doc.y;
+
+  // Table Header
+  doc.font("Helvetica-Bold");
+  doc.text("Status", col1, tableY);
+  doc.text("Count", col2, tableY, {
+    width: 100,
+    align: "right",
+  });
+
+  doc.moveDown();
+  tableY = doc.y;
+
+  doc.font("Helvetica");
+
+  const rows = [
+    ["Active", data.statusBreakdown.active],
+    ["Pending", data.statusBreakdown.pending],
+    ["Under Review", data.statusBreakdown.underReview],
+    ["Closed", data.statusBreakdown.closed],
+  ];
+
+  rows.forEach(([status, count]) => {
+    doc.text(status, col1, tableY);
+    doc.text(String(count), col2, tableY, {
+      width: 100,
+      align: "right",
+    });
+    tableY += 20;
+  });
+
+  doc.moveDown();
+
+  // Divider
+  doc.moveTo(50, tableY).lineTo(550, tableY).stroke();
+  doc.moveDown(2);
+
+  // =========================
+  // 🔴 FOOTER
+  // =========================
+  doc
+    .font("Helvetica-Oblique")
+    .fontSize(10)
+    .text("Generated by Civix Platform", {
+      align: "center",
+    });
 
   doc.end();
 };
