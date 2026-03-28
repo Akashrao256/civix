@@ -41,25 +41,12 @@ export default function CreatePetition() {
             <AppSidebar />
             
             <main className="app-main">
-                <header className="pl-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <header className="page-header">
                     <div>
-                        <h1 className="pl-header-title" style={{ fontSize: '26px', fontWeight: '700', color: '#1e1b4b', marginBottom: '4px' }}>✍️ Create a Petition</h1>
-                        <p className="pl-header-sub" style={{ fontSize: '13px', color: '#64748b' }}>Start a campaign for your community</p>
+                        <h1 className="page-title">✍️ Create a Petition</h1>
+                        <p className="page-subtitle">Start a campaign for your community</p>
                     </div>
-                    <button 
-                        className="pl-back-btn" 
-                        onClick={() => navigate("/petitions")}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            background: "transparent",
-                            color: "#64748b",
-                            padding: "8px 12px",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "14px"
-                        }}
-                    >
+                    <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>
                         ← Back
                     </button>
                 </header>

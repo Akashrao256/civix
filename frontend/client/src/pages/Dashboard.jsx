@@ -92,7 +92,7 @@ export default function Dashboard() {
             <h2>Welcome Back, {user?.fullName?.split(" ")[0] || "Citizen"} 👋</h2>
             <p>Manage petitions and stay updated with community activities.</p>
           </div>
-          <button className="add-petition-btn" onClick={() => navigate("/petitions/create")}>
+          <button className="btn btn-secondary" onClick={() => navigate("/petitions/create")}>
             + Add Petition
           </button>
         </div>
@@ -103,10 +103,10 @@ export default function Dashboard() {
           <StatCard title="Total Signatures" value={stats.signed} />
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px", marginBottom: "16px" }}>
-          <h3 style={{ margin: 0 }}>Recent Petitions</h3>
+        <div className="section-header">
+          <h3>Recent Petitions</h3>
           {petitions.length > 0 && (
-            <button className="add-petition-btn" onClick={() => navigate("/petitions")} style={{ fontSize: "14px", padding: "8px 16px" }}>
+            <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>
               View All Petitions →
             </button>
           )}
@@ -117,10 +117,10 @@ export default function Dashboard() {
             <p>Loading...</p>
           </div>
         ) : petitions.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+          <div className="empty-state">
             <p>No petitions yet.</p>
-            <button className="add-petition-btn" onClick={() => navigate("/petitions/create")}
-              style={{ marginTop: 12, display: "inline-block" }}>
+            <button className="btn btn-primary" onClick={() => navigate("/petitions/create")}
+              style={{ marginTop: 12 }}>
               Create the first one
             </button>
           </div>
@@ -139,9 +139,9 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px", marginBottom: "16px" }}>
+        <div className="section-header">
           <h3>Recent Polls</h3>
-          <button className="add-petition-btn" onClick={() => navigate("/polls")} style={{ fontSize: "14px", padding: "8px 16px" }}>
+          <button className="btn btn-ghost" onClick={() => navigate("/polls")}>
             View All Polls →
           </button>
         </div>
@@ -152,21 +152,26 @@ export default function Dashboard() {
             <p>Loading...</p>
           </div>
         ) : polls.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "20px", color: "#64748b", background: "#f8fafc", borderRadius: "8px" }}>
+          <div className="empty-state">
             <p>No polls available.</p>
           </div>
         ) : (
           <div className="grid">
             {polls.map((poll) => (
-              <div key={poll._id} className="card" onClick={() => navigate(`/polls/${poll._id}/results`)} style={{ cursor: "pointer", transition: "transform 0.2s" }} onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-4px)"} onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-                <h4 style={{ color: "#1e293b", marginBottom: "12px", fontSize: "1.1rem" }}>{poll.question}</h4>
-                <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+              <button
+                key={poll._id}
+                className="card poll-preview"
+                onClick={() => navigate(`/polls/${poll._id}/results`)}
+                type="button"
+              >
+                <h4>{poll.question}</h4>
+                <p className="poll-preview-meta">
                   📍 {poll.targetLocation}
                 </p>
-                <div style={{ marginTop: "16px", color: "#3b82f6", fontSize: "0.875rem", fontWeight: "500" }}>
+                <div className="poll-preview-link">
                   {poll.options.length} Options available →
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}

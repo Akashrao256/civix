@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, NavLink } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import AppSidebar from "../../components/AppSidebar";
 
 const CATEGORIES = ["Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 
 export default function EditPetition() {
     const { id } = useParams();
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const [form, setForm] = useState({ title: "", description: "", category: "", location: "" });
@@ -67,46 +68,16 @@ export default function EditPetition() {
         }
     };
 
-    const handleLogout = () => { logout(); navigate("/login"); };
-
     return (
-        <div className="pl-layout">
-            {/* Sidebar */}
-            <aside className="pl-sidebar">
-                <div className="pl-sidebar-brand">
-                    <span className="pl-brand-icon">⚖️</span>
-                    <div><h2>Civix</h2><p>Citizen Portal</p></div>
-                </div>
-                <nav className="pl-nav">
-                    {[
-                        { icon: "⊞", label: "Dashboard", to: "/dashboard" },
-                        { icon: "📋", label: "Petitions", to: "/petitions" },
-                        { icon: "✍️", label: "Create Petition", to: "/petitions/create" },
-                    ].map((item) => (
-                        <NavLink key={item.label} to={item.to}
-                            className={({ isActive }) => `pl-nav-item${isActive ? " active" : ""}`}>
-                            <span className="pl-nav-icon">{item.icon}</span>
-                            <span>{item.label}</span>
-                        </NavLink>
-                    ))}
-                </nav>
-                <div className="pl-sidebar-user">
-                    <div className="pl-user-avatar">{user?.fullName?.[0]?.toUpperCase() || "C"}</div>
-                    <div className="pl-user-info">
-                        <p className="pl-user-name">{user?.fullName || "Citizen"}</p>
-                        <p className="pl-user-role">Citizen</p>
-                    </div>
-                    <button className="pl-logout-icon" onClick={handleLogout} title="Logout">↪</button>
-                </div>
-            </aside>
-            {/* Main */}
-            <main className="pl-main">
-                <header className="pl-header">
+        <div className="app-layout">
+            <AppSidebar />
+            <main className="app-main">
+                <header className="page-header">
                     <div>
-                        <h1 className="pl-header-title">✏️ Edit Petition</h1>
-                        <p className="pl-header-sub">Update your petition details</p>
+                        <h1 className="page-title">✏️ Edit Petition</h1>
+                        <p className="page-subtitle">Update your petition details</p>
                     </div>
-                    <button className="pl-back-btn" onClick={() => navigate("/petitions")}>← Back</button>
+                    <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>← Back</button>
                 </header>
 
                 <div className="cp-form-wrap">
@@ -122,7 +93,7 @@ export default function EditPetition() {
                         <div className="cp-error-page">
                             <div style={{ fontSize: 48, marginBottom: 16 }}>🚫</div>
                             <p>{error}</p>
-                            <button className="pl-create-btn" onClick={() => navigate("/petitions")}>Go Back</button>
+                            <button className="btn btn-primary" onClick={() => navigate("/petitions")}>Go Back</button>
                         </div>
                     ) : (
                         <form className="cp-form" onSubmit={handleSubmit}>

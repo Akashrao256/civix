@@ -229,7 +229,7 @@ export default function OfficialDashboard() {
                                                 </span>
                                             </td>
                                             <td>
-                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <div className="od-action-row">
                                                     <select
                                                         className="od-action-select"
                                                         value={p.status}
@@ -243,15 +243,7 @@ export default function OfficialDashboard() {
                                                     <button 
                                                         onClick={() => handleAddResponse(p._id)}
                                                         disabled={updating === p._id}
-                                                        style={{
-                                                            background: "#4f46e5", 
-                                                            color: "#fff", 
-                                                            border: "none", 
-                                                            padding: "6px 12px", 
-                                                            borderRadius: "6px", 
-                                                            cursor: "pointer",
-                                                            fontSize: "13px"
-                                                        }}
+                                                        className="od-action-btn"
                                                     >
                                                         💬 Respond
                                                     </button>

@@ -68,34 +68,26 @@ export default function CreatePoll() {
         <div className="app-layout">
             <AppSidebar />
             <div className="app-main">
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                    <button
-                        className="btn-secondary"
-                        onClick={() => navigate("/polls")}
-                        style={{
-                            marginBottom: "24px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            background: "transparent",
-                            color: "#64748b",
-                            padding: "8px 0",
-                            border: "none",
-                            cursor: "pointer"
-                        }}
-                    >
-                        <span style={{ fontSize: "18px" }}>←</span> Back to Polls
+                <header className="page-header">
+                    <div>
+                        <h1 className="page-title">Create a New Poll</h1>
+                        <p className="page-subtitle">Gather feedback from the community on important issues.</p>
+                    </div>
+                    <button className="btn btn-ghost" onClick={() => navigate("/polls")}>
+                        ← Back to Polls
                     </button>
+                </header>
 
-                    <div className="card" style={{ padding: "40px", borderRadius: "20px", boxShadow: "0 10px 40px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9" }}>
-                        <div style={{ marginBottom: "32px", borderBottom: "1px solid #e2e8f0", paddingBottom: "20px" }}>
-                            <h2 style={{ color: "#0f172a", fontSize: "28px", fontWeight: "700", marginBottom: "8px" }}>Create a New Poll</h2>
-                            <p style={{ color: "#64748b", fontSize: "15px" }}>Gather feedback from the community on important issues.</p>
+                <div className="form-shell">
+                    <div className="form-card">
+                        <div className="form-card-header">
+                            <h2 className="form-card-title">Poll Details</h2>
+                            <p className="form-card-subtitle">Provide a question and at least two options.</p>
                         </div>
 
                         {error && <div className="error-message">{error}</div>}
 
-                        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                        <form onSubmit={handleSubmit} className="form-stack">
                             <div className="form-group">
                                 <label>Question</label>
                                 <input
@@ -121,54 +113,27 @@ export default function CreatePoll() {
                             </div>
 
                             <div className="form-group">
-                                <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <label className="form-label-row">
                                     <span>Options</span>
-                                    <button
-                                        type="button"
-                                        onClick={addOption}
-                                        style={{
-                                            background: "none",
-                                            border: "none",
-                                            color: "#2563eb",
-                                            cursor: "pointer",
-                                            fontWeight: "500"
-                                        }}
-                                    >
+                                    <button type="button" className="btn btn-ghost" onClick={addOption}>
                                         + Add Option
                                     </button>
                                 </label>
 
                                 {formData.options.map((option, index) => (
-                                    <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                                    <div key={index} className="option-row">
                                         <input
                                             type="text"
                                             value={option}
                                             onChange={(e) => handleOptionChange(index, e.target.value)}
                                             placeholder={`Option ${index + 1}`}
-                                            required={index < 2} // First 2 are required visually, API will also validate
-                                            style={{ flex: 1, padding: "12px 16px", borderRadius: "10px", border: "1.5px solid #e2e8f0", background: "#f8fafc", transition: "all 0.2s" }}
-                                            onFocus={(e) => { e.target.style.borderColor = "#6366f1"; e.target.style.background = "#fff"; }}
-                                            onBlur={(e) => { e.target.style.borderColor = "#e2e8f0"; e.target.style.background = "#f8fafc"; }}
+                                            required={index < 2}
                                         />
                                         {formData.options.length > 2 && (
                                             <button
                                                 type="button"
+                                                className="btn btn-danger option-remove"
                                                 onClick={() => removeOption(index)}
-                                                style={{
-                                                    background: "#fef2f2",
-                                                    color: "#ef4444",
-                                                    border: "1px solid #fecaca",
-                                                    borderRadius: "10px",
-                                                    width: "46px",
-                                                    cursor: "pointer",
-                                                    fontSize: "20px",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    transition: "all 0.2s"
-                                                }}
-                                                onMouseOver={(e) => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
-                                                onMouseOut={(e) => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}
                                                 title="Remove Option"
                                             >
                                                 ×
@@ -178,26 +143,7 @@ export default function CreatePoll() {
                                 ))}
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                style={{
-                                    marginTop: "24px",
-                                    padding: "16px",
-                                    background: "linear-gradient(135deg, #6366f1, #4f46e5)",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "12px",
-                                    fontSize: "16px",
-                                    fontWeight: "600",
-                                    cursor: loading ? "not-allowed" : "pointer",
-                                    opacity: loading ? 0.7 : 1,
-                                    transition: "all 0.3s",
-                                    boxShadow: "0 8px 20px rgba(99, 102, 241, 0.3)"
-                                }}
-                                onMouseOver={(e) => !loading && (e.currentTarget.style.transform = "translateY(-2px)")}
-                                onMouseOut={(e) => !loading && (e.currentTarget.style.transform = "translateY(0)")}
-                            >
+                            <button type="submit" className="btn btn-primary" disabled={loading}>
                                 {loading ? "Creating Poll..." : "Create Poll"}
                             </button>
                         </form>
