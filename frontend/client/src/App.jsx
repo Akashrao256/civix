@@ -16,13 +16,14 @@ import EditPetition from "./pages/petitions/EditPetition";
 import PollList from "./pages/polls/PollList";
 import CreatePoll from "./pages/polls/CreatePoll";
 import PollResults from "./pages/polls/PollResults";
+import LandingPage from "./pages/LandingPage";
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
 
           {/* Registration */}
