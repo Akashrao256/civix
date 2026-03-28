@@ -26,13 +26,16 @@ export default function OfficialDashboard() {
     const { user } = useAuth();
 
     const [petitions, setPetitions] = useState([]);
+    const [pendingOfficials, setPendingOfficials] = useState([]);
     const [stats, setStats] = useState({ total: 0, active: 0, review: 0, closed: 0 });
     const [loading, setLoading] = useState(true);
+    const [pendingLoading, setPendingLoading] = useState(true);
     const [filterCategory, setFilterCategory] = useState("All");
     const [filterStatus, setFilterStatus] = useState("All");
     const [search, setSearch] = useState("");
     const [useLocationFilter, setUseLocationFilter] = useState(true);
     const [updating, setUpdating] = useState(null);
+    const [approvingOfficialId, setApprovingOfficialId] = useState(null);
     const [toast, setToast] = useState(null);
 
     const showToast = (message, type = "success") => {
@@ -63,7 +66,21 @@ export default function OfficialDashboard() {
         }
     };
 
+    const fetchPendingOfficials = async () => {
+        try {
+            setPendingLoading(true);
+            const res = await API.get("/admin/pending-officials");
+            setPendingOfficials(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error(err);
+            showToast(err.response?.data?.message || "Failed to load pending officials.", "error");
+        } finally {
+            setPendingLoading(false);
+        }
+    };
+
     useEffect(() => { fetchPetitions(); }, [user?.location, useLocationFilter]);
+    useEffect(() => { fetchPendingOfficials(); }, []);
 
     const handleAddResponse = async (petitionId) => {
         const message = window.prompt("Enter your official response to this petition:");
@@ -106,6 +123,19 @@ export default function OfficialDashboard() {
             showToast(err.response?.data?.message || "Failed to update status.", "error");
         } finally {
             setUpdating(null);
+        }
+    };
+
+    const handleApproveOfficial = async (officialId, officialName) => {
+        setApprovingOfficialId(officialId);
+        try {
+            await API.put(`/admin/approve-official/${officialId}`);
+            setPendingOfficials(prev => prev.filter(official => official._id !== officialId));
+            showToast(`${officialName || "Official"} approved successfully!`);
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to approve official.", "error");
+        } finally {
+            setApprovingOfficialId(null);
         }
     };
 
@@ -194,6 +224,75 @@ export default function OfficialDashboard() {
                         </span>
                     )}
                 </div>
+
+                {/* Pending Officials */}
+                <section className="od-pending-wrap">
+                    <div className="od-pending-header">
+                        <div>
+                            <h3 className="od-pending-title">Pending Official Approvals</h3>
+                            <p className="od-pending-subtitle">Review newly registered officials and approve verified requests.</p>
+                        </div>
+                        {!pendingLoading && (
+                            <span className="od-pending-count">
+                                {pendingOfficials.length} pending
+                            </span>
+                        )}
+                    </div>
+
+                    {pendingLoading ? (
+                        <LoadingState message="Loading pending officials..." />
+                    ) : pendingOfficials.length === 0 ? (
+                        <EmptyState
+                            title="No pending officials"
+                            description="All official registrations are up to date right now."
+                        />
+                    ) : (
+                        <div className="od-pending-table-wrap">
+                            <table className="od-pending-table">
+                                <thead>
+                                    <tr>
+                                        <th>Official</th>
+                                        <th>Email</th>
+                                        <th>Location</th>
+                                        <th>Registered On</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pendingOfficials.map((official, i) => (
+                                        <tr key={official._id} className="od-table-row" style={{ animationDelay: `${i * 0.04}s` }}>
+                                            <td>
+                                                <div className="od-petition-title">{official.fullName}</div>
+                                            </td>
+                                            <td>
+                                                <span className="od-location">{official.email}</span>
+                                            </td>
+                                            <td>
+                                                <span className="od-location">📍 {official.location}</span>
+                                            </td>
+                                            <td>
+                                                <span className="od-location">
+                                                    {official.createdAt
+                                                        ? new Date(official.createdAt).toLocaleDateString("en-IN")
+                                                        : "N/A"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <Button
+                                                    className="od-approve-btn"
+                                                    disabled={approvingOfficialId === official._id}
+                                                    onClick={() => handleApproveOfficial(official._id, official.fullName)}
+                                                >
+                                                    {approvingOfficialId === official._id ? "Approving..." : "Approve"}
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
 
                 {/* Petitions Table */}
                 <div className="od-table-wrap">

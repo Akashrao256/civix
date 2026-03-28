@@ -1029,6 +1029,86 @@ h1, h2, h3, h4 {
   accent-color: var(--primary);
 }
 
+/* ---- PENDING OFFICIALS ---- */
+.od-pending-wrap {
+  margin-bottom: 22px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+  animation: od-slide-up 0.4s ease 0.12s both;
+}
+
+.od-pending-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.od-pending-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.od-pending-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.od-pending-count {
+  align-self: center;
+  background: #ecfeff;
+  color: #155e75;
+  border: 1px solid #a5f3fc;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.od-pending-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+}
+
+.od-pending-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.od-pending-table thead tr {
+  background: var(--bg-soft);
+  border-bottom: 2px solid var(--border);
+}
+
+.od-pending-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.od-pending-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.od-approve-btn {
+  min-width: 96px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 /* ---- TABLE ---- */
 .od-table-wrap {
   background: #fff;
@@ -1254,6 +1334,15 @@ h1, h2, h3, h4 {
 
   .od-filters {
     flex-wrap: wrap;
+  }
+
+  .od-pending-wrap {
+    padding: 16px;
+  }
+
+  .od-pending-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
