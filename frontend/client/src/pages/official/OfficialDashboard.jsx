@@ -29,6 +29,7 @@ export default function OfficialDashboard() {
     const [filterCategory, setFilterCategory] = useState("All");
     const [filterStatus, setFilterStatus] = useState("All");
     const [search, setSearch] = useState("");
+    const [useLocationFilter, setUseLocationFilter] = useState(true);
     const [updating, setUpdating] = useState(null);
     const [toast, setToast] = useState(null);
 
@@ -41,7 +42,9 @@ export default function OfficialDashboard() {
         try {
             setLoading(true);
             const userLoc = user?.location ? encodeURIComponent(user.location) : "";
-            const url = userLoc ? `/petitions?limit=100&location=${userLoc}` : "/petitions?limit=100";
+            const url = userLoc && useLocationFilter
+                ? `/petitions?limit=100&location=${userLoc}`
+                : "/petitions?limit=100";
             const res = await API.get(url);
             const list = res.data.petitions || [];
             setPetitions(list);
@@ -58,7 +61,7 @@ export default function OfficialDashboard() {
         }
     };
 
-    useEffect(() => { fetchPetitions(); }, [user?.location]);
+    useEffect(() => { fetchPetitions(); }, [user?.location, useLocationFilter]);
 
     const handleAddResponse = async (petitionId) => {
         const message = window.prompt("Enter your official response to this petition:");
@@ -168,6 +171,14 @@ export default function OfficialDashboard() {
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
+                    <label className="od-filter-toggle">
+                        <input
+                            type="checkbox"
+                            checked={useLocationFilter}
+                            onChange={(e) => setUseLocationFilter(e.target.checked)}
+                        />
+                        Only my location
+                    </label>
                     <select className="pl-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
@@ -206,7 +217,9 @@ export default function OfficialDashboard() {
                             </thead>
                             <tbody>
                                 {filtered.map((p, i) => {
-                                    const sc = STATUS_COLORS[p.status] || STATUS_COLORS.active;
+                                    const statusKey = (p.status || "").toLowerCase().replace(/\s+/g, "_");
+                                    const sc = STATUS_COLORS[statusKey] || STATUS_COLORS.active;
+                                    const statusLabel = STATUS_LABELS[statusKey] || p.status || "Unknown";
                                     return (
                                         <tr key={p._id} className="od-table-row" style={{ animationDelay: `${i * 0.04}s` }}>
                                             <td>
@@ -225,7 +238,7 @@ export default function OfficialDashboard() {
                                             <td>
                                                 <span className="od-status-badge" style={{ background: sc.bg, color: sc.color }}>
                                                     <span className="od-status-dot" style={{ background: sc.dot }}></span>
-                                                    {STATUS_LABELS[p.status]}
+                                                    {statusLabel}
                                                 </span>
                                             </td>
                                             <td>
