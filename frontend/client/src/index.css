@@ -2586,6 +2586,45 @@ h1, h2, h3, h4 {
   white-space: nowrap;
 }
 
+.or-export {
+  position: relative;
+}
+
+.or-export-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 190px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  z-index: 20;
+}
+
+.or-export-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.or-export-item:hover:not(:disabled) {
+  background: var(--bg-soft);
+}
+
+.or-export-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .or-charts-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -2677,6 +2716,11 @@ h1, h2, h3, h4 {
   .or-section-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .or-export-menu {
+    left: 0;
+    right: auto;
   }
 
   .or-chart-card {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
 import Button from "../../components/ui/Button";
@@ -90,7 +90,9 @@ function normalizeReport(raw) {
 export default function OfficialReports() {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [downloading, setDownloading] = useState(false);
+    const [downloadingType, setDownloadingType] = useState(null);
+    const [showExportMenu, setShowExportMenu] = useState(false);
+    const exportMenuRef = useRef(null);
 
     useEffect(() => {
         const fetchReport = async () => {
@@ -104,6 +106,17 @@ export default function OfficialReports() {
             }
         };
         fetchReport();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+                setShowExportMenu(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const chartConfig = useMemo(() => {
@@ -226,7 +239,7 @@ export default function OfficialReports() {
     }, []);
 
     const handleExport = async (type) => {
-        setDownloading(true);
+        setDownloadingType(type);
         try {
             const res = await API.get(`/reports/export/${type}`, { responseType: "blob" });
             const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -236,11 +249,12 @@ export default function OfficialReports() {
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
+            setShowExportMenu(false);
         } catch (err) {
             console.error(`Failed to export ${type}`, err);
             alert(`Failed to export ${type.toUpperCase()}`);
         } finally {
-            setDownloading(false);
+            setDownloadingType(null);
         }
     };
 
@@ -254,21 +268,37 @@ export default function OfficialReports() {
                     title="📊 Civic Engagement Reports"
                     subtitle="Monthly overview of activity in your locality"
                     actions={(
-                        <div className="page-header-actions">
+                        <div className="or-export" ref={exportMenuRef}>
                             <Button
-                                variant="success"
-                                onClick={() => handleExport("csv")}
-                                disabled={downloading}
+                                variant="primary"
+                                onClick={() => setShowExportMenu((prev) => !prev)}
+                                disabled={Boolean(downloadingType)}
+                                aria-haspopup="menu"
+                                aria-expanded={showExportMenu}
                             >
-                                {downloading ? "⟳ Downloading..." : "📥 Export CSV"}
+                                {downloadingType ? "⟳ Downloading..." : "📤 Export"}
                             </Button>
-                            <Button
-                                variant="danger"
-                                onClick={() => handleExport("pdf")}
-                                disabled={downloading}
-                            >
-                                {downloading ? "⟳ Downloading..." : "📄 Export PDF"}
-                            </Button>
+
+                            {showExportMenu && (
+                                <div className="or-export-menu" role="menu" aria-label="Export options">
+                                    <button
+                                        type="button"
+                                        className="or-export-item"
+                                        onClick={() => handleExport("csv")}
+                                        disabled={Boolean(downloadingType)}
+                                    >
+                                        📥 Export as CSV
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="or-export-item"
+                                        onClick={() => handleExport("pdf")}
+                                        disabled={Boolean(downloadingType)}
+                                    >
+                                        📄 Export as PDF
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 />
