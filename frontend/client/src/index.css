@@ -2138,6 +2138,141 @@ body {
 }
 
 /* =============================================
+   OFFICIAL REPORTS — CHARTS
+   ============================================= */
+
+.or-section {
+  margin-top: 36px;
+}
+
+.or-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.or-section-title {
+  font-size: 18px;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.or-section-sub {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.or-pill {
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.or-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 18px;
+}
+
+.or-chart-card,
+.or-insights-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 18px 20px;
+}
+
+.or-chart-card {
+  grid-column: span 6;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.or-chart-card--compact {
+  grid-column: span 4;
+}
+
+.or-chart-header h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.or-chart-header span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.or-chart-body {
+  flex: 1;
+  min-height: 220px;
+}
+
+.or-chart-body--donut {
+  min-height: 200px;
+}
+
+.or-insights-card {
+  grid-column: span 4;
+  background: linear-gradient(135deg, #eef2ff, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.or-insights-card h4 {
+  margin: 0;
+  font-size: 15px;
+  color: #1e1b4b;
+}
+
+.or-insights-card ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.or-insights-card li strong {
+  color: #0f172a;
+}
+
+@media (max-width: 1100px) {
+  .or-chart-card {
+    grid-column: span 12;
+  }
+
+  .or-chart-card--compact,
+  .or-insights-card {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 700px) {
+  .or-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .or-chart-card {
+    min-height: 280px;
+  }
+}
+
+/* =============================================
    PETITION CARD — FIXED LAYOUT
    ============================================= */
 

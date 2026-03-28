@@ -7,8 +7,8 @@ import AppSidebar from "../../components/AppSidebar";
 import { City } from "country-state-city";
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
-const STATUSES = ["All", "active", "under_review", "closed"];
-const STATUS_LABELS = { All: "All", active: "Active", under_review: "Under Review", closed: "Closed" };
+const STATUSES = ["All", "pending", "active", "under_review", "closed"];
+const STATUS_LABELS = { All: "All", pending: "Pending", active: "Active", under_review: "Under Review", closed: "Closed" };
 
 export default function PetitionsList() {
     const { user } = useAuth();

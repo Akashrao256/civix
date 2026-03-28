@@ -1,12 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import API from "../../api/axios";
-import { useAuth } from "../../context/AuthContext";
 import AppSidebar from "../../components/AppSidebar";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Tooltip,
+    Legend,
+    Filler,
+} from "chart.js";
+import { Bar, Line, Doughnut } from "react-chartjs-2";
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    ArcElement,
+    Tooltip,
+    Legend,
+    Filler
+);
 
 const PETITION_CARDS = (report) => [
     { label: "Total Petitions",    value: report.totalPetitions,      icon: "📋", gradient: "linear-gradient(135deg, #6366f1, #4f46e5)" },
     { label: "Active Petitions",   value: report.activePetitions,     icon: "🔥", gradient: "linear-gradient(135deg, #10b981, #059669)" },
     { label: "Under Review",       value: report.underReviewPetitions,icon: "🔍", gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
+    { label: "Pending",            value: report.pendingPetitions,    icon: "⏳", gradient: "linear-gradient(135deg, #38bdf8, #0ea5e9)" },
     { label: "Closed Petitions",   value: report.closedPetitions,     icon: "🔒", gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
     { label: "Total Signatures",   value: report.totalSignatures,     icon: "✍️", gradient: "linear-gradient(135deg, #8b5cf6, #7c3aed)" },
 ];
@@ -40,8 +65,25 @@ function ReportStatCard({ label, value, icon, gradient }) {
     );
 }
 
+function normalizeReport(raw) {
+    if (!raw) return null;
+    const summary = raw.summary || {};
+    const status = raw.statusBreakdown || {};
+
+    return {
+        month: raw.month || raw.meta?.month || "",
+        totalPetitions: raw.totalPetitions ?? summary.totalPetitions ?? 0,
+        activePetitions: raw.activePetitions ?? status.active ?? 0,
+        underReviewPetitions: raw.underReviewPetitions ?? status.underReview ?? 0,
+        pendingPetitions: raw.pendingPetitions ?? status.pending ?? 0,
+        closedPetitions: raw.closedPetitions ?? status.closed ?? 0,
+        totalSignatures: raw.totalSignatures ?? summary.totalSignatures ?? 0,
+        totalPolls: raw.totalPolls ?? summary.totalPolls ?? 0,
+        totalVotes: raw.totalVotes ?? summary.totalVotes ?? 0,
+    };
+}
+
 export default function OfficialReports() {
-    const { user } = useAuth();
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
@@ -50,7 +92,7 @@ export default function OfficialReports() {
         const fetchReport = async () => {
             try {
                 const res = await API.get("/reports/monthly");
-                setReport(res.data);
+                setReport(normalizeReport(res.data));
             } catch (err) {
                 console.error("Failed to load report", err);
             } finally {
@@ -58,6 +100,125 @@ export default function OfficialReports() {
             }
         };
         fetchReport();
+    }, []);
+
+    const chartConfig = useMemo(() => {
+        if (!report) return null;
+
+        const statusLabels = ["Active", "Under Review", "Pending", "Closed"];
+        const statusValues = [
+            report.activePetitions,
+            report.underReviewPetitions,
+            report.pendingPetitions,
+            report.closedPetitions,
+        ];
+
+        const statusColors = ["#10b981", "#f59e0b", "#38bdf8", "#ef4444"];
+        const statusBorder = ["#059669", "#d97706", "#0284c7", "#dc2626"];
+
+        return {
+            barData: {
+                labels: statusLabels,
+                datasets: [
+                    {
+                        label: "Petitions",
+                        data: statusValues,
+                        backgroundColor: statusColors,
+                        borderColor: statusBorder,
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        maxBarThickness: 48,
+                    },
+                ],
+            },
+            lineData: {
+                labels: ["Petitions", "Signatures", "Polls", "Votes"],
+                datasets: [
+                    {
+                        label: "Engagement Mix",
+                        data: [
+                            report.totalPetitions,
+                            report.totalSignatures,
+                            report.totalPolls,
+                            report.totalVotes,
+                        ],
+                        borderColor: "#6366f1",
+                        backgroundColor: "rgba(99, 102, 241, 0.18)",
+                        pointBackgroundColor: "#4f46e5",
+                        tension: 0.35,
+                        fill: true,
+                    },
+                ],
+            },
+            doughnutData: {
+                labels: statusLabels,
+                datasets: [
+                    {
+                        label: "Status Share",
+                        data: statusValues,
+                        backgroundColor: statusColors,
+                        borderColor: "#ffffff",
+                        borderWidth: 2,
+                    },
+                ],
+            },
+        };
+    }, [report]);
+
+    const chartOptions = useMemo(() => {
+        const base = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 600 },
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: { color: "#475569", font: { size: 12, weight: "500" } },
+                },
+                tooltip: {
+                    backgroundColor: "#0f172a",
+                    titleColor: "#fff",
+                    bodyColor: "#e2e8f0",
+                    padding: 10,
+                    cornerRadius: 10,
+                },
+            },
+        };
+
+        return {
+            bar: {
+                ...base,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#64748b", font: { size: 11 } },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(148, 163, 184, 0.2)" },
+                        ticks: { color: "#64748b", font: { size: 11 } },
+                    },
+                },
+            },
+            line: {
+                ...base,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: "#64748b", font: { size: 11 } },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: "rgba(148, 163, 184, 0.2)" },
+                        ticks: { color: "#64748b", font: { size: 11 } },
+                    },
+                },
+            },
+            doughnut: {
+                ...base,
+                cutout: "60%",
+            },
+        };
     }, []);
 
     const handleExport = async (type) => {
@@ -141,6 +302,59 @@ export default function OfficialReports() {
                             {POLL_CARDS(report).map((card) => (
                                 <ReportStatCard key={card.label} {...card} />
                             ))}
+                        </div>
+
+                        {/* Visual Insights */}
+                        <div className="or-section">
+                            <div className="or-section-header">
+                                <div>
+                                    <h3 className="or-section-title">📈 Visual Insights</h3>
+                                    <p className="or-section-sub">Charts highlight petition status share and overall engagement mix.</p>
+                                </div>
+                                <span className="or-pill">Auto-refreshed monthly</span>
+                            </div>
+
+                            <div className="or-charts-grid">
+                                <div className="or-chart-card">
+                                    <div className="or-chart-header">
+                                        <h4>Petition Status Breakdown</h4>
+                                        <span>Counts by current status</span>
+                                    </div>
+                                    <div className="or-chart-body">
+                                        <Bar data={chartConfig.barData} options={chartOptions.bar} />
+                                    </div>
+                                </div>
+
+                                <div className="or-chart-card">
+                                    <div className="or-chart-header">
+                                        <h4>Engagement Mix</h4>
+                                        <span>Petitions, signatures, polls, and votes</span>
+                                    </div>
+                                    <div className="or-chart-body">
+                                        <Line data={chartConfig.lineData} options={chartOptions.line} />
+                                    </div>
+                                </div>
+
+                                <div className="or-chart-card or-chart-card--compact">
+                                    <div className="or-chart-header">
+                                        <h4>Status Share</h4>
+                                        <span>Relative distribution this month</span>
+                                    </div>
+                                    <div className="or-chart-body or-chart-body--donut">
+                                        <Doughnut data={chartConfig.doughnutData} options={chartOptions.doughnut} />
+                                    </div>
+                                </div>
+
+                                <div className="or-insights-card">
+                                    <h4>Key Insights</h4>
+                                    <ul>
+                                        <li><strong>{report.activePetitions}</strong> active petitions driving engagement.</li>
+                                        <li><strong>{report.totalVotes}</strong> votes cast across polls this month.</li>
+                                        <li><strong>{report.totalSignatures}</strong> signatures collected across petitions.</li>
+                                        <li><strong>{report.pendingPetitions}</strong> petitions awaiting review.</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

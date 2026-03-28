@@ -24,11 +24,12 @@ export default function EditPetition() {
                 const list = res.data.petitions || [];
                 const petition = list.find((p) => p._id === id);
                 if (!petition) { setError("Petition not found."); return; }
-                if (petition.creator?._id !== user?.id && petition.creator !== user?.id) {
+                const userIdToMatch = user?._id || user?.id;
+                if (petition.creator?._id !== userIdToMatch && petition.creator !== userIdToMatch) {
                     setError("You are not authorized to edit this petition."); return;
                 }
-                if (petition.status === "closed") {
-                    setError("This petition is closed and cannot be edited."); return;
+                if (petition.status !== "pending") {
+                    setError("Only pending petitions can be edited."); return;
                 }
                 setOriginal(petition);
                 setForm({

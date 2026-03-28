@@ -194,8 +194,8 @@ exports.updatePetition = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit" });
     }
 
-    if (petition.status === "closed") {
-      return res.status(400).json({ message: "Cannot edit closed petition" });
+    if (petition.status !== "pending") {
+      return res.status(400).json({ message: "Only pending petitions can be edited" });
     }
 
     const { title, description, category, location } = req.body;
@@ -332,11 +332,11 @@ exports.deletePetition = async (req, res) => {
 
     if (isOfficial) {
       // Officials can delete any petition
-    } else if (isCreator && (petition.status === "pending" || petition.status === "active")) {
-      // Creator can delete pending or active petitions
+    } else if (isCreator && petition.status === "pending") {
+      // Creator can delete pending petitions
     } else if (isCreator) {
       return res.status(403).json({
-        message: "You can only delete your petition while it is pending or active",
+        message: "You can only delete your petition while it is pending",
       });
     } else {
       return res.status(403).json({ message: "Not authorized to delete" });
