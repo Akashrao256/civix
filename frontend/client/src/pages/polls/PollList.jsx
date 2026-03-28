@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import EmptyState from "../../components/ui/EmptyState";
+import LoadingState from "../../components/ui/LoadingState";
 
 export default function PollList() {
     const [polls, setPolls] = useState([]);
@@ -42,33 +46,22 @@ export default function PollList() {
         <div className="app-layout">
             <AppSidebar />
             <div className="app-main">
-                <header className="page-header">
-                    <div>
-                        <h1 className="page-title">Active Polls</h1>
-                        <p className="page-subtitle">Cast your vote or start a new poll for your community.</p>
-                    </div>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => navigate("/polls/create")}
-                    >
-                        + Create Poll
-                    </button>
-                </header>
+                <PageHeader
+                    title="Active Polls"
+                    subtitle="Cast your vote or start a new poll for your community."
+                    actions={<Button onClick={() => navigate("/polls/create")}>+ Create Poll</Button>}
+                />
 
                 {error && <div className="error-message">{error}</div>}
 
                 {loading ? (
-                    <div className="pl-loading">
-                        <div className="pl-spinner"></div>
-                        <p>Loading polls...</p>
-                    </div>
+                    <LoadingState message="Loading polls..." />
                 ) : polls.length === 0 ? (
-                    <div className="empty-state">
-                        <p style={{ fontSize: "16px", marginBottom: "16px" }}>No active polls found.</p>
-                        <button className="btn btn-primary" onClick={() => navigate("/polls/create")}>
-                            Create the first poll
-                        </button>
-                    </div>
+                    <EmptyState
+                        title="No active polls found"
+                        description="Create the first poll to gather public sentiment."
+                        action={<Button onClick={() => navigate("/polls/create")}>Create the first poll</Button>}
+                    />
                 ) : (
                     <div className="poll-grid">
                         {polls.map((poll) => (
@@ -107,12 +100,12 @@ export default function PollList() {
                                 </div>
 
                                 <div className="poll-footer">
-                                    <button
-                                        className="btn btn-ghost"
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => navigate(`/polls/${poll._id}/results`)}
                                     >
                                         View Results →
-                                    </button>
+                                    </Button>
                                     <span className="poll-footer-meta">{poll.options.length} Options</span>
                                 </div>
                             </div>

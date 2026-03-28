@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import EmptyState from "../../components/ui/EmptyState";
+import LoadingState from "../../components/ui/LoadingState";
 
 const STATUS_COLORS = {
     active: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
@@ -21,7 +24,6 @@ const FILTER_STATUS_LABELS = { All: "All", active: "Active", under_review: "Unde
 
 export default function OfficialDashboard() {
     const { user } = useAuth();
-    const navigate = useNavigate();
 
     const [petitions, setPetitions] = useState([]);
     const [stats, setStats] = useState({ total: 0, active: 0, review: 0, closed: 0 });
@@ -129,20 +131,21 @@ export default function OfficialDashboard() {
             {/* Main Content */}
             <main className="app-main">
                 {/* Header */}
-                <header className="od-header">
-                    <div>
-                        <h1 className="od-header-title">Official Dashboard</h1>
-                        <p className="od-header-sub">Manage and respond to citizen petitions</p>
-                    </div>
-                    <div className="od-header-right">
-                        <div className="od-official-badge">
-                            <span>🏛️</span> {user?.location || "Government"}
+                <PageHeader
+                    title="Official Dashboard"
+                    subtitle="Manage and respond to citizen petitions"
+                    className="od-header"
+                    actions={(
+                        <div className="od-header-right">
+                            <div className="od-official-badge">
+                                <span>🏛️</span> {user?.location || "Government"}
+                            </div>
+                            <div className="od-time">
+                                {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
+                            </div>
                         </div>
-                        <div className="od-time">
-                            {new Date().toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}
-                        </div>
-                    </div>
-                </header>
+                    )}
+                />
 
                 {/* Stats */}
                 <div className="od-stats">
@@ -195,14 +198,9 @@ export default function OfficialDashboard() {
                 {/* Petitions Table */}
                 <div className="od-table-wrap">
                     {loading ? (
-                        <div className="od-loading">
-                            <div className="od-spinner"></div>
-                            <p>Loading petitions...</p>
-                        </div>
+                        <LoadingState message="Loading petitions..." />
                     ) : filtered.length === 0 ? (
-                        <div className="od-empty">
-                            <p>📭 No petitions found matching your filters.</p>
-                        </div>
+                        <EmptyState title="No petitions found" description="Try changing filters or disable location-only mode." />
                     ) : (
                         <table className="od-table">
                             <thead>
@@ -253,13 +251,14 @@ export default function OfficialDashboard() {
                                                         <option value="under_review">Under Review</option>
                                                         <option value="closed">Closed</option>
                                                     </select>
-                                                    <button 
+                                                    <Button
+                                                        variant="secondary"
                                                         onClick={() => handleAddResponse(p._id)}
                                                         disabled={updating === p._id}
                                                         className="od-action-btn"
                                                     >
                                                         💬 Respond
-                                                    </button>
+                                                    </Button>
                                                     {updating === p._id && <span className="od-updating">⟳</span>}
                                                 </div>
                                             </td>

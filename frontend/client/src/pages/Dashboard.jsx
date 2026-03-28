@@ -5,6 +5,10 @@ import { useAuth } from "../context/AuthContext";
 import AppSidebar from "../components/AppSidebar";
 import StatCard from "../components/StatCard";
 import PetitionCard from "../components/PetitionCard";
+import Button from "../components/ui/Button";
+import SectionHeader from "../components/ui/SectionHeader";
+import EmptyState from "../components/ui/EmptyState";
+import LoadingState from "../components/ui/LoadingState";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -92,9 +96,9 @@ export default function Dashboard() {
             <h2>Welcome Back, {user?.fullName?.split(" ")[0] || "Citizen"} 👋</h2>
             <p>Manage petitions and stay updated with community activities.</p>
           </div>
-          <button className="btn btn-secondary" onClick={() => navigate("/petitions/create")}>
+          <Button variant="secondary" onClick={() => navigate("/petitions/create")}>
             + Add Petition
-          </button>
+          </Button>
         </div>
 
         <div className="stats">
@@ -103,27 +107,20 @@ export default function Dashboard() {
           <StatCard title="Total Signatures" value={stats.signed} />
         </div>
 
-        <div className="section-header">
-          <h3>Recent Petitions</h3>
-          {petitions.length > 0 && (
-            <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>
-              View All Petitions →
-            </button>
-          )}
-        </div>
+        <SectionHeader
+          title="Recent Petitions"
+          action={petitions.length > 0 ? (
+            <Button variant="ghost" onClick={() => navigate("/petitions")}>View All Petitions →</Button>
+          ) : null}
+        />
         {loading ? (
-          <div className="pl-loading">
-            <div className="pl-spinner"></div>
-            <p>Loading...</p>
-          </div>
+          <LoadingState message="Loading petitions..." />
         ) : petitions.length === 0 ? (
-          <div className="empty-state">
-            <p>No petitions yet.</p>
-            <button className="btn btn-primary" onClick={() => navigate("/petitions/create")}
-              style={{ marginTop: 12 }}>
-              Create the first one
-            </button>
-          </div>
+          <EmptyState
+            title="No petitions yet"
+            description="Start your first petition to gather support from your community."
+            action={<Button onClick={() => navigate("/petitions/create")}>Create the first one</Button>}
+          />
         ) : (
           <div className="grid">
             {petitions.map((p, i) => (
@@ -139,22 +136,15 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="section-header">
-          <h3>Recent Polls</h3>
-          <button className="btn btn-ghost" onClick={() => navigate("/polls")}>
-            View All Polls →
-          </button>
-        </div>
+        <SectionHeader
+          title="Recent Polls"
+          action={<Button variant="ghost" onClick={() => navigate("/polls")}>View All Polls →</Button>}
+        />
 
         {loading ? (
-          <div className="pl-loading">
-            <div className="pl-spinner"></div>
-            <p>Loading...</p>
-          </div>
+          <LoadingState message="Loading polls..." />
         ) : polls.length === 0 ? (
-          <div className="empty-state">
-            <p>No polls available.</p>
-          </div>
+          <EmptyState title="No polls available" description="New polls will appear here when created." />
         ) : (
           <div className="grid">
             {polls.map((poll) => (

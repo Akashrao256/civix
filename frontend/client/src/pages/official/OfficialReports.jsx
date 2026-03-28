@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import EmptyState from "../../components/ui/EmptyState";
+import LoadingState from "../../components/ui/LoadingState";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -246,38 +250,33 @@ export default function OfficialReports() {
 
             <div className="app-main">
                 {/* Header */}
-                <header className="page-header">
-                    <div>
-                        <h1 className="page-title">📊 Civic Engagement Reports</h1>
-                        <p className="page-subtitle">Monthly overview of activity in your locality</p>
-                    </div>
-                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                        <button
-                            className="btn btn-success"
-                            onClick={() => handleExport("csv")}
-                            disabled={downloading}
-                        >
-                            {downloading ? "⟳ Downloading..." : "📥 Export CSV"}
-                        </button>
-                        <button
-                            className="btn btn-danger"
-                            onClick={() => handleExport("pdf")}
-                            disabled={downloading}
-                        >
-                            {downloading ? "⟳ Downloading..." : "📄 Export PDF"}
-                        </button>
-                    </div>
-                </header>
+                <PageHeader
+                    title="📊 Civic Engagement Reports"
+                    subtitle="Monthly overview of activity in your locality"
+                    actions={(
+                        <div className="page-header-actions">
+                            <Button
+                                variant="success"
+                                onClick={() => handleExport("csv")}
+                                disabled={downloading}
+                            >
+                                {downloading ? "⟳ Downloading..." : "📥 Export CSV"}
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={() => handleExport("pdf")}
+                                disabled={downloading}
+                            >
+                                {downloading ? "⟳ Downloading..." : "📄 Export PDF"}
+                            </Button>
+                        </div>
+                    )}
+                />
 
                 {loading ? (
-                    <div className="pl-loading">
-                        <div className="pl-spinner"></div>
-                        <p>Generating Monthly Report...</p>
-                    </div>
+                    <LoadingState message="Generating monthly report..." />
                 ) : !report ? (
-                    <div style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-                        <p>No report data available.</p>
-                    </div>
+                    <EmptyState title="No report data available" description="Try refreshing or check report generation status." />
                 ) : (
                     <div>
                         <p style={{ marginBottom: "20px", color: "#475569", fontWeight: "600" }}>

@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import LoadingState from "../../components/ui/LoadingState";
 
 const CATEGORIES = ["Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 
@@ -72,17 +75,15 @@ export default function EditPetition() {
         <div className="app-layout">
             <AppSidebar />
             <main className="app-main">
-                <header className="page-header">
-                    <div>
-                        <h1 className="page-title">✏️ Edit Petition</h1>
-                        <p className="page-subtitle">Update your petition details</p>
-                    </div>
-                    <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>← Back</button>
-                </header>
+                <PageHeader
+                    title="✏️ Edit Petition"
+                    subtitle="Update your petition details"
+                    actions={<Button variant="ghost" onClick={() => navigate("/petitions")}>← Back</Button>}
+                />
 
                 <div className="cp-form-wrap">
                     {loading ? (
-                        <div className="pl-loading"><div className="pl-spinner"></div><p>Loading...</p></div>
+                        <LoadingState message="Loading petition..." />
                     ) : success ? (
                         <div className="cp-success">
                             <div className="cp-success-icon">✅</div>
@@ -93,7 +94,7 @@ export default function EditPetition() {
                         <div className="cp-error-page">
                             <div style={{ fontSize: 48, marginBottom: 16 }}>🚫</div>
                             <p>{error}</p>
-                            <button className="btn btn-primary" onClick={() => navigate("/petitions")}>Go Back</button>
+                            <Button variant="primary" onClick={() => navigate("/petitions")}>Go Back</Button>
                         </div>
                     ) : (
                         <form className="cp-form" onSubmit={handleSubmit}>
@@ -129,12 +130,12 @@ export default function EditPetition() {
                             </div>
 
                             <div className="cp-actions">
-                                <button type="button" className="cp-cancel-btn" onClick={() => navigate("/petitions")}>
+                                <Button type="button" variant="ghost" className="cp-cancel-btn" onClick={() => navigate("/petitions")}>
                                     Cancel
-                                </button>
-                                <button type="submit" className="cp-submit-btn" disabled={saving}>
+                                </Button>
+                                <Button type="submit" variant="primary" className="cp-submit-btn" disabled={saving}>
                                     {saving ? "⟳ Saving..." : "💾 Save Changes"}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     )}

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
 
 const CATEGORIES = ["Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 
@@ -41,15 +43,11 @@ export default function CreatePetition() {
             <AppSidebar />
             
             <main className="app-main">
-                <header className="page-header">
-                    <div>
-                        <h1 className="page-title">✍️ Create a Petition</h1>
-                        <p className="page-subtitle">Start a campaign for your community</p>
-                    </div>
-                    <button className="btn btn-ghost" onClick={() => navigate("/petitions")}>
-                        ← Back
-                    </button>
-                </header>
+                <PageHeader
+                    title="✍️ Create a Petition"
+                    subtitle="Start a campaign for your community"
+                    actions={<Button variant="ghost" onClick={() => navigate("/petitions")}>← Back</Button>}
+                />
 
                 <div className="cp-form-wrap">
                     {success ? (
@@ -107,12 +105,12 @@ export default function CreatePetition() {
                             </div>
 
                             <div className="cp-actions">
-                                <button type="button" className="cp-cancel-btn" onClick={() => navigate("/petitions")}>
+                                <Button type="button" variant="ghost" className="cp-cancel-btn" onClick={() => navigate("/petitions")}>
                                     Cancel
-                                </button>
-                                <button type="submit" className="cp-submit-btn" disabled={loading}>
+                                </Button>
+                                <Button type="submit" variant="primary" className="cp-submit-btn" disabled={loading}>
                                     {loading ? "⟳ Submitting..." : "🚀 Submit Petition"}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     )}

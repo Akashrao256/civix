@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
 
 export default function CreatePoll() {
     const navigate = useNavigate();
@@ -68,15 +70,11 @@ export default function CreatePoll() {
         <div className="app-layout">
             <AppSidebar />
             <div className="app-main">
-                <header className="page-header">
-                    <div>
-                        <h1 className="page-title">Create a New Poll</h1>
-                        <p className="page-subtitle">Gather feedback from the community on important issues.</p>
-                    </div>
-                    <button className="btn btn-ghost" onClick={() => navigate("/polls")}>
-                        ← Back to Polls
-                    </button>
-                </header>
+                <PageHeader
+                    title="Create a New Poll"
+                    subtitle="Gather feedback from the community on important issues."
+                    actions={<Button variant="ghost" onClick={() => navigate("/polls")}>← Back to Polls</Button>}
+                />
 
                 <div className="form-shell">
                     <div className="form-card">
@@ -115,9 +113,9 @@ export default function CreatePoll() {
                             <div className="form-group">
                                 <label className="form-label-row">
                                     <span>Options</span>
-                                    <button type="button" className="btn btn-ghost" onClick={addOption}>
+                                    <Button type="button" variant="ghost" onClick={addOption}>
                                         + Add Option
-                                    </button>
+                                    </Button>
                                 </label>
 
                                 {formData.options.map((option, index) => (
@@ -130,22 +128,23 @@ export default function CreatePoll() {
                                             required={index < 2}
                                         />
                                         {formData.options.length > 2 && (
-                                            <button
+                                            <Button
                                                 type="button"
-                                                className="btn btn-danger option-remove"
+                                                variant="danger"
+                                                className="option-remove"
                                                 onClick={() => removeOption(index)}
                                                 title="Remove Option"
                                             >
                                                 ×
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                 ))}
                             </div>
 
-                            <button type="submit" className="btn btn-primary" disabled={loading}>
+                            <Button type="submit" disabled={loading}>
                                 {loading ? "Creating Poll..." : "Create Poll"}
-                            </button>
+                            </Button>
                         </form>
                     </div>
                 </div>

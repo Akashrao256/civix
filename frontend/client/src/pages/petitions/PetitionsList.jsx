@@ -5,6 +5,10 @@ import { useAuth } from "../../context/AuthContext";
 import PetitionCard from "../../components/PetitionCard";
 import AppSidebar from "../../components/AppSidebar";
 import { City } from "country-state-city";
+import Button from "../../components/ui/Button";
+import PageHeader from "../../components/ui/PageHeader";
+import EmptyState from "../../components/ui/EmptyState";
+import LoadingState from "../../components/ui/LoadingState";
 
 const CATEGORIES = ["All", "Infrastructure", "Education", "Health", "Environment", "Safety", "Other"];
 const STATUSES = ["All", "pending", "active", "under_review", "closed"];
@@ -119,15 +123,11 @@ export default function PetitionsList() {
             {/* Main */}
             <main className="app-main">
                 {/* Header */}
-                <header className="pl-header">
-                    <div>
-                        <h1 className="pl-header-title">📋 Petitions</h1>
-                        <p className="pl-header-sub">Browse, filter, and sign community petitions</p>
-                    </div>
-                    <button className="pl-create-btn" onClick={() => navigate("/petitions/create")}>
-                        + Create Petition
-                    </button>
-                </header>
+                <PageHeader
+                    title="📋 Petitions"
+                    subtitle="Browse, filter, and sign community petitions"
+                    actions={<Button onClick={() => navigate("/petitions/create")}>+ Create Petition</Button>}
+                />
 
                 {/* Filters */}
                 <div className="pl-filters">
@@ -162,7 +162,7 @@ export default function PetitionsList() {
                         ))}
                     </select>
 
-                    <button className="pl-reset-btn" onClick={resetFilters}>✕ Reset</button>
+                    <Button variant="secondary" className="pl-reset-btn" onClick={resetFilters}>✕ Reset</Button>
 
                     {!loading && (
                         <span className="pl-count-badge">
@@ -173,18 +173,13 @@ export default function PetitionsList() {
 
                 {/* Grid */}
                 {loading ? (
-                    <div className="pl-loading">
-                        <div className="pl-spinner"></div>
-                        <p>Loading petitions...</p>
-                    </div>
+                    <LoadingState message="Loading petitions..." />
                 ) : petitions.length === 0 ? (
-                    <div className="pl-empty">
-                        <div className="pl-empty-icon">📭</div>
-                        <p>No petitions found.</p>
-                        <button className="pl-create-btn" onClick={() => navigate("/petitions/create")}>
-                            Be the first to create one
-                        </button>
-                    </div>
+                    <EmptyState
+                        title="No petitions found"
+                        description="Try changing your filters or create a new petition."
+                        action={<Button onClick={() => navigate("/petitions/create")}>Be the first to create one</Button>}
+                    />
                 ) : (
                     <div className="pl-grid">
                         {petitions.map((p, i) => (
@@ -205,21 +200,23 @@ export default function PetitionsList() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="pl-pagination">
-                        <button
+                        <Button
+                            variant="secondary"
                             className="pl-page-btn"
                             disabled={page === 1}
                             onClick={() => setPage((p) => p - 1)}
                         >
                             ← Prev
-                        </button>
+                        </Button>
                         <span className="pl-page-info">Page {page} of {totalPages}</span>
-                        <button
+                        <Button
+                            variant="secondary"
                             className="pl-page-btn"
                             disabled={page === totalPages}
                             onClick={() => setPage((p) => p + 1)}
                         >
                             Next →
-                        </button>
+                        </Button>
                     </div>
                 )}
             </main>

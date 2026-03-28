@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
+import Button from "../../components/ui/Button";
+import LoadingState from "../../components/ui/LoadingState";
 
 export default function PollResults() {
     const { id } = useParams();
@@ -26,12 +28,7 @@ export default function PollResults() {
     };
 
     if (loading) {
-        return (
-            <div className="pl-loading">
-                <div className="pl-spinner"></div>
-                <p>Loading results...</p>
-            </div>
-        );
+        return <LoadingState message="Loading results..." />;
     }
 
     if (error || !pollData) {
@@ -39,7 +36,7 @@ export default function PollResults() {
             <div className="app-layout">
                 <AppSidebar />
                 <div className="app-main">
-                    <button className="btn btn-secondary" onClick={() => navigate("/polls")}>← Back to Polls</button>
+                    <Button variant="secondary" onClick={() => navigate("/polls")}>← Back to Polls</Button>
                     <div className="error-message" style={{ marginTop: "24px" }}>{error || "Poll not found"}</div>
                 </div>
             </div>
@@ -53,13 +50,13 @@ export default function PollResults() {
             <AppSidebar />
             <div className="app-main">
                 <div className="poll-results-wrap">
-                    <button
-                        className="btn btn-ghost"
+                    <Button
+                        variant="ghost"
                         onClick={() => navigate("/polls")}
                         style={{ marginBottom: "18px" }}
                     >
                         ← Back to Polls
-                    </button>
+                    </Button>
 
                     <div className="card poll-results-card">
                         <div className="poll-results-header">
