@@ -29,7 +29,11 @@ export default function EditPetition() {
                 const petition = list.find((p) => p._id === id);
                 if (!petition) { setError("Petition not found."); return; }
                 const userIdToMatch = user?._id || user?.id;
-                if (petition.creator?._id !== userIdToMatch && petition.creator !== userIdToMatch) {
+                const creatorId =
+                    petition.creator?._id ||
+                    petition.creator?.id ||
+                    petition.creator;
+                if (!userIdToMatch || !creatorId || String(creatorId) !== String(userIdToMatch)) {
                     setError("You are not authorized to edit this petition."); return;
                 }
                 if (petition.status !== "pending") {
@@ -65,7 +69,9 @@ export default function EditPetition() {
             setSuccess(true);
             setTimeout(() => navigate("/petitions"), 2000);
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to update petition.");
+            const backendMessage = err.response?.data?.message;
+
+            setError(backendMessage || "Failed to update petition.");
         } finally {
             setSaving(false);
         }

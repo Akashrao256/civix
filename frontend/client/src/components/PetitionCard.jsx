@@ -26,9 +26,12 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
     : { ...FALLBACK_STATUS, label: FALLBACK_STATUS.label(petition) };
   const catColor = CATEGORY_COLORS[petition.category] || "#f1f5f9";
 
-  const isOwner =
-    currentUser &&
-    (petition.creator?._id === (currentUser._id || currentUser.id) || petition.creator === (currentUser._id || currentUser.id));
+  const currentUserId = currentUser?._id || currentUser?.id;
+  const creatorId =
+    petition.creator?._id ||
+    petition.creator?.id ||
+    petition.creator;
+  const isOwner = Boolean(currentUserId && creatorId && String(creatorId) === String(currentUserId));
   const isCitizen = currentUser?.role === "citizen";
   const isClosed = petition.status === "closed";
   const hasSigned = petition.hasSigned;
@@ -89,6 +92,13 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
         </div>
 
         <div className="pc-actions">
+          <button
+            className="pc-btn pc-view-btn"
+            onClick={() => navigate(`/petitions/${petition._id}`)}
+            title="View Petition Details"
+          >
+            View Details
+          </button>
           {/* Sign – only citizens */}
           {isCitizen && !isOwner && !isClosed && !hasSigned && onSign && (
             <button
