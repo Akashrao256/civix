@@ -86,9 +86,10 @@ export default function PetitionsList() {
 
     const handleDelete = async (petitionId) => {
         if (!window.confirm("Are you sure you want to delete this petition?")) return;
+        const reason = window.prompt("Optional: provide a reason for deletion (visible to admins)") || "";
         setDeletingId(petitionId);
         try {
-            await API.delete(`/petitions/${petitionId}`);
+            await API.delete(`/petitions/${petitionId}`, { data: { reason } });
             showToast("🗑️ Petition deleted successfully!");
             fetchPetitions();
         } catch (err) {

@@ -47,7 +47,8 @@ export default function Dashboard() {
   const handleDelete = async (petitionId) => {
     if (!window.confirm("Are you sure you want to delete this petition?")) return;
     try {
-      await API.delete(`/petitions/${petitionId}`);
+      const reason = window.prompt("Optional: provide a reason for deletion (visible to admins)") || "";
+      await API.delete(`/petitions/${petitionId}`, { data: { reason } });
       setPetitions((prev) => prev.filter((p) => p._id !== petitionId));
       setStats((prev) => ({ ...prev, petitions: prev.petitions - 1 }));
     } catch (err) {

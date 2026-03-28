@@ -26,14 +26,22 @@ export default function PollResults() {
     };
 
     if (loading) {
-        return <div style={{ textAlign: "center", padding: "40px" }}>Loading results...</div>;
+        return (
+            <div className="pl-loading">
+                <div className="pl-spinner"></div>
+                <p>Loading results...</p>
+            </div>
+        );
     }
 
     if (error || !pollData) {
         return (
-            <div className="container" style={{ padding: "24px" }}>
-                <button className="btn-secondary" onClick={() => navigate("/polls")}>← Back to Polls</button>
-                <div className="error-message" style={{ marginTop: "24px" }}>{error || "Poll not found"}</div>
+            <div className="app-layout">
+                <AppSidebar />
+                <div className="app-main">
+                    <button className="btn btn-secondary" onClick={() => navigate("/polls")}>← Back to Polls</button>
+                    <div className="error-message" style={{ marginTop: "24px" }}>{error || "Poll not found"}</div>
+                </div>
             </div>
         );
     }
@@ -44,35 +52,23 @@ export default function PollResults() {
         <div className="app-layout">
             <AppSidebar />
             <div className="app-main">
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+                <div className="poll-results-wrap">
                     <button
-                        className="btn-secondary"
+                        className="btn btn-ghost"
                         onClick={() => navigate("/polls")}
-                        style={{
-                            marginBottom: "24px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            background: "transparent",
-                            color: "#64748b",
-                            padding: "8px 0",
-                            border: "none",
-                            cursor: "pointer"
-                        }}
+                        style={{ marginBottom: "18px" }}
                     >
-                        <span style={{ fontSize: "18px" }}>←</span> Back to Polls
+                        ← Back to Polls
                     </button>
 
-                    <div className="card" style={{ padding: "40px", borderRadius: "20px", boxShadow: "0 10px 40px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9" }}>
-                        <div style={{ marginBottom: "32px", borderBottom: "1px solid #e2e8f0", paddingBottom: "24px" }}>
-                            <div style={{ display: "inline-block", padding: "6px 12px", background: "#f0fdf4", color: "#166534", borderRadius: "20px", fontSize: "12px", fontWeight: "600", marginBottom: "16px" }}>
-                                Live Results
-                            </div>
-                            <h2 style={{ color: "#0f172a", fontSize: "28px", fontWeight: "700", marginBottom: "12px", lineHeight: "1.3" }}>
+                    <div className="card poll-results-card">
+                        <div className="poll-results-header">
+                            <div className="poll-results-badge">Live Results</div>
+                            <h2 className="poll-results-question">
                                 {pollData.question}
                             </h2>
-                            <p style={{ color: "#64748b", fontSize: "15px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                <span style={{ fontSize: "18px" }}>📊</span> {totalVotes} Total Votes
+                            <p className="poll-results-total">
+                                <span>📊</span> {totalVotes} Total Votes
                             </p>
                         </div>
 
@@ -81,31 +77,17 @@ export default function PollResults() {
                                 const percentage = totalVotes === 0 ? 0 : Math.round((result.votes / totalVotes) * 100);
 
                                 return (
-                                    <div key={index} style={{ padding: "8px 0" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", alignItems: "flex-end" }}>
-                                            <span style={{ fontWeight: "600", color: "#1e293b", fontSize: "16px" }}>{result.option}</span>
-                                            <div style={{ textAlign: "right" }}>
-                                                <div style={{ color: "#0f172a", fontSize: "18px", fontWeight: "700" }}>{percentage}%</div>
-                                                <div style={{ color: "#94a3b8", fontSize: "12px", fontWeight: "500" }}>{result.votes} votes</div>
+                                    <div key={index} className="poll-result-item">
+                                        <div className="poll-result-row">
+                                            <span className="poll-result-option">{result.option}</span>
+                                            <div className="poll-result-stats">
+                                                <div className="poll-result-percent">{percentage}%</div>
+                                                <div className="poll-result-votes">{result.votes} votes</div>
                                             </div>
                                         </div>
 
-                                        {/* Progress bar background */}
-                                        <div style={{
-                                            width: "100%",
-                                            height: "14px",
-                                            backgroundColor: "#f1f5f9",
-                                            borderRadius: "999px",
-                                            overflow: "hidden"
-                                        }}>
-                                            {/* Progress bar fill */}
-                                            <div style={{
-                                                height: "100%",
-                                                width: `${percentage}%`,
-                                                background: "linear-gradient(90deg, #60a5fa, #3b82f6)",
-                                                borderRadius: "999px",
-                                                transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)"
-                                            }}></div>
+                                        <div className="poll-progress">
+                                            <div className="poll-progress-fill" style={{ width: `${percentage}%` }}></div>
                                         </div>
                                     </div>
                                 );

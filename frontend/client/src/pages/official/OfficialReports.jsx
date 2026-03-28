@@ -246,27 +246,23 @@ export default function OfficialReports() {
 
             <div className="app-main">
                 {/* Header */}
-                <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+                <header className="page-header">
                     <div>
-                        <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#1e1b4b", margin: 0 }}>
-                            📊 Civic Engagement Reports
-                        </h1>
-                        <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
-                            Monthly overview of activity in your locality
-                        </p>
+                        <h1 className="page-title">📊 Civic Engagement Reports</h1>
+                        <p className="page-subtitle">Monthly overview of activity in your locality</p>
                     </div>
-                    <div style={{ display: "flex", gap: "12px" }}>
+                    <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                         <button
+                            className="btn btn-success"
                             onClick={() => handleExport("csv")}
                             disabled={downloading}
-                            style={{ background: "#10b981", color: "#fff", padding: "10px 20px", borderRadius: "10px", border: "none", cursor: downloading ? "not-allowed" : "pointer", fontWeight: "600", fontSize: "14px" }}
                         >
                             {downloading ? "⟳ Downloading..." : "📥 Export CSV"}
                         </button>
                         <button
+                            className="btn btn-danger"
                             onClick={() => handleExport("pdf")}
                             disabled={downloading}
-                            style={{ background: "#ef4444", color: "#fff", padding: "10px 20px", borderRadius: "10px", border: "none", cursor: downloading ? "not-allowed" : "pointer", fontWeight: "600", fontSize: "14px" }}
                         >
                             {downloading ? "⟳ Downloading..." : "📄 Export PDF"}
                         </button>
