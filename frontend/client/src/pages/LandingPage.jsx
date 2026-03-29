@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Silk from "../components/Silk";
 import TiltedCard from "../components/TiltedCard";
 import AnimatedList from "../components/AnimatedList";
 
@@ -94,18 +93,6 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page" id="home">
-      <div className="lp-bg" aria-hidden="true">
-        <Silk
-          color="#2665E0"
-          speed={5}
-          scale={1}
-          noiseIntensity={1.5}
-          rotation={0}
-          className="lp-ether"
-          style={{ pointerEvents: "none" }}
-        />
-      </div>
-
       <div className="lp-content">
       <header className="lp-navbar-wrap">
         <nav className="lp-navbar" aria-label="Main navigation">

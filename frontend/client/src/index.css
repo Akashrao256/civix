@@ -725,23 +725,7 @@ body.landing-page-open {
   position: relative;
   isolation: isolate;
   color: #ffffff;
-  background:
-    radial-gradient(circle at 88% 8%, rgba(66, 133, 244, 0.22), transparent 35%),
-    radial-gradient(circle at 12% 20%, rgba(31, 75, 153, 0.3), transparent 32%),
-    linear-gradient(180deg, #050d22 0%, #081736 44%, #0b1f4a 100%);
-}
-
-.lp-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.52;
-  pointer-events: none;
-}
-
-.lp-ether {
-  width: 100%;
-  height: 100%;
+  background: #0b1f4a;
 }
 
 .lp-content {
