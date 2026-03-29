@@ -13,6 +13,7 @@ import OfficialReports from "./pages/official/OfficialReports";
 import PetitionsList from "./pages/petitions/PetitionsList";
 import CreatePetition from "./pages/petitions/CreatePetition";
 import EditPetition from "./pages/petitions/EditPetition";
+import PetitionDetails from "./pages/petitions/PetitionDetails";
 import PollList from "./pages/polls/PollList";
 import CreatePoll from "./pages/polls/CreatePoll";
 import PollResults from "./pages/polls/PollResults";
@@ -38,6 +39,7 @@ export default function App() {
           {/* Citizen Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/petitions" element={<ProtectedRoute><PetitionsList /></ProtectedRoute>} />
+          <Route path="/petitions/:id" element={<ProtectedRoute><PetitionDetails /></ProtectedRoute>} />
           <Route path="/petitions/create" element={<ProtectedRoute><CreatePetition /></ProtectedRoute>} />
           <Route path="/petitions/:id/edit" element={<ProtectedRoute><EditPetition /></ProtectedRoute>} />
 
