@@ -198,15 +198,15 @@ h1, h2, h3, h4 {
 }
 
 .stat-card:nth-child(1) {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
 }
 
 .stat-card:nth-child(2) {
-  background: linear-gradient(135deg, var(--success), #157a4e);
+  background: linear-gradient(135deg, #38bdf8, #1d4ed8);
 }
 
 .stat-card:nth-child(3) {
-  background: linear-gradient(135deg, var(--warning), #a46320);
+  background: linear-gradient(135deg, #60a5fa, #1e40af);
 }
 
 .stat-card h4 {

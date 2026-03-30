@@ -33,12 +33,12 @@ ChartJS.register(
 );
 
 const PETITION_CARDS = (report) => [
-    { label: "Total Petitions",    value: report.totalPetitions,      icon: "📋", gradient: "linear-gradient(135deg, #6366f1, #4f46e5)" },
-    { label: "Active Petitions",   value: report.activePetitions,     icon: "🔥", gradient: "linear-gradient(135deg, #10b981, #059669)" },
+    { label: "Total Petitions",    value: report.totalPetitions,      icon: "📋", gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
+    { label: "Active Petitions",   value: report.activePetitions,     icon: "🔥", gradient: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
     { label: "Under Review",       value: report.underReviewPetitions,icon: "🔍", gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
     { label: "Pending",            value: report.pendingPetitions,    icon: "⏳", gradient: "linear-gradient(135deg, #38bdf8, #0ea5e9)" },
     { label: "Closed Petitions",   value: report.closedPetitions,     icon: "🔒", gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
-    { label: "Total Signatures",   value: report.totalSignatures,     icon: "✍️", gradient: "linear-gradient(135deg, #8b5cf6, #7c3aed)" },
+    { label: "Total Signatures",   value: report.totalSignatures,     icon: "✍️", gradient: "linear-gradient(135deg, #60a5fa, #1d4ed8)" },
 ];
 
 const POLL_CARDS = (report) => [
