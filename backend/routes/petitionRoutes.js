@@ -6,6 +6,7 @@ const {
   createPetition,
   signPetition,
   getPetitions,
+  getPetitionById,
   updatePetition,
   updateStatus,
   respondToPetition,
@@ -14,6 +15,7 @@ const {
 
 
 router.get("/", protect, getPetitions);
+router.get("/:id", protect, getPetitionById);
 
 router.post("/", protect, createPetition);
 

@@ -6,12 +6,14 @@ import Button from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
 import EmptyState from "../../components/ui/EmptyState";
 import LoadingState from "../../components/ui/LoadingState";
+import { useToast } from "../../context/ToastContext";
 
 export default function PollList() {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [selectedOptions, setSelectedOptions] = useState({});
     useEffect(() => {
         fetchPolls();
@@ -35,10 +37,10 @@ export default function PollList() {
         try {
             await API.post(`/polls/${pollId}/vote`, { selectedOption });
             // Re-fetch to update the UI (could also manually update state for optimist ui)
-            alert("Vote submitted successfully!");
+            showToast("Vote submitted successfully!");
             navigate(`/polls/${pollId}/results`);
         } catch (err) {
-            alert(err.response?.data?.message || "Error submitting vote");
+            showToast(err.response?.data?.message || "Error submitting vote", "error");
         }
     };
 
@@ -80,7 +82,7 @@ export default function PollList() {
                                                 const previousVote = selectedOptions[poll._id];
 
                                                 if (previousVote) {
-                                                    alert("You've already voted in this poll");
+                                                    showToast("You've already voted in this poll", "error");
                                                     return;
                                                 }
                                                 const updatedVotes = {

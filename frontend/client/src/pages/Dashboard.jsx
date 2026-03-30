@@ -9,10 +9,12 @@ import Button from "../components/ui/Button";
 import SectionHeader from "../components/ui/SectionHeader";
 import EmptyState from "../components/ui/EmptyState";
 import LoadingState from "../components/ui/LoadingState";
+import { useToast } from "../context/ToastContext";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [stats, setStats] = useState({ petitions: 0, active: 0, signed: 0 });
   const [petitions, setPetitions] = useState([]);
@@ -57,7 +59,7 @@ export default function Dashboard() {
       setStats((prev) => ({ ...prev, petitions: prev.petitions - 1 }));
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to delete petition.");
+      showToast(err.response?.data?.message || "Failed to delete petition.", "error");
     }
   };
 
@@ -79,10 +81,10 @@ export default function Dashboard() {
       );
       // Update overall stats
       setStats((prev) => ({ ...prev, signed: prev.signed + 1 }));
-      alert(`✍️ Petition signed successfully!`);
+      showToast("Petition signed successfully!");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to sign petition.");
+      showToast(err.response?.data?.message || "Failed to sign petition.", "error");
     }
   };
 

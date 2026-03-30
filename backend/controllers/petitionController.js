@@ -96,7 +96,7 @@ exports.signPetition = async (req, res) => {
 =================================================== */
 exports.getPetitions = async (req, res) => {
   try {
-    const { location, category, status, page = 1, limit = 10 } = req.query;
+    const { location, category, status, q, page = 1, limit = 10 } = req.query;
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
@@ -124,6 +124,13 @@ exports.getPetitions = async (req, res) => {
     // Status filter — allowed for all roles
     if (status) {
       andConditions.push({ status });
+    }
+
+    if (q && q.trim()) {
+      const searchRegex = { $regex: q.trim(), $options: "i" };
+      andConditions.push({
+        $or: [{ title: searchRegex }, { description: searchRegex }],
+      });
     }
 
     const finalFilter =
@@ -169,6 +176,48 @@ exports.getPetitions = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+/* ===================================================
+   GET PETITION BY ID
+=================================================== */
+exports.getPetitionById = async (req, res) => {
+  try {
+    const petitionId = req.params.id;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
+
+    if (!mongoose.Types.ObjectId.isValid(petitionId)) {
+      return res.status(400).json({ message: "Invalid Petition ID" });
+    }
+
+    const petition = await Petition.findOne({ _id: petitionId, isDeleted: false })
+      .populate("creator", "fullName email")
+      .populate("responses.respondedBy", "fullName email")
+      .sort({ createdAt: -1 });
+
+    if (!petition) {
+      return res.status(404).json({ message: "Petition not found" });
+    }
+
+    const signatureCount = await Signature.countDocuments({ petition: petition._id });
+
+    let hasSigned = false;
+    if (role === "citizen" && userId) {
+      const sig = await Signature.findOne({ petition: petition._id, user: userId });
+      hasSigned = !!sig;
+    }
+
+    return res.status(200).json({
+      petition: {
+        ...petition.toObject(),
+        signatureCount,
+        hasSigned,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 

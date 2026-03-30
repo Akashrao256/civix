@@ -26,6 +26,7 @@ export default function PetitionsList() {
     const [totalCount, setTotalCount] = useState(0);
 
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [category, setCategory] = useState("All");
     const [status, setStatus] = useState("All");
     const [location, setLocation] = useState("");
@@ -38,6 +39,15 @@ export default function PetitionsList() {
         setTimeout(() => setToast(null), 3500);
     };
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search.trim());
+            setPage(1);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [search]);
+
     const fetchPetitions = useCallback(async () => {
         setLoading(true);
         try {
@@ -45,18 +55,10 @@ export default function PetitionsList() {
             if (category !== "All") params.append("category", category);
             if (status !== "All") params.append("status", status);
             if (location.trim()) params.append("location", location.trim());
+            if (debouncedSearch) params.append("q", debouncedSearch);
 
             const res = await API.get(`/petitions?${params.toString()}`);
-            let list = res.data.petitions || [];
-
-            if (search.trim()) {
-                const q = search.toLowerCase();
-                list = list.filter(
-                    (p) =>
-                        p.title.toLowerCase().includes(q) ||
-                        p.description.toLowerCase().includes(q)
-                );
-            }
+            const list = res.data.petitions || [];
 
             setPetitions(list);
             setTotalCount(res.data.total || list.length);
@@ -68,7 +70,7 @@ export default function PetitionsList() {
         } finally {
             setLoading(false);
         }
-    }, [page, category, status, location, search]);
+    }, [page, category, status, location, debouncedSearch]);
 
     useEffect(() => {
         fetchPetitions();
@@ -137,7 +139,7 @@ export default function PetitionsList() {
                             className="pl-search"
                             placeholder="Search petitions..."
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
 

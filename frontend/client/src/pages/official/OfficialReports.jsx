@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
 import EmptyState from "../../components/ui/EmptyState";
 import LoadingState from "../../components/ui/LoadingState";
+import { useToast } from "../../context/ToastContext";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -93,6 +94,7 @@ export default function OfficialReports() {
     const [downloadingType, setDownloadingType] = useState(null);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const exportMenuRef = useRef(null);
+    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchReport = async () => {
@@ -250,9 +252,10 @@ export default function OfficialReports() {
             link.click();
             link.parentNode.removeChild(link);
             setShowExportMenu(false);
+            showToast(`${type.toUpperCase()} report exported successfully`);
         } catch (err) {
             console.error(`Failed to export ${type}`, err);
-            alert(`Failed to export ${type.toUpperCase()}`);
+            showToast(`Failed to export ${type.toUpperCase()}`, "error");
         } finally {
             setDownloadingType(null);
         }

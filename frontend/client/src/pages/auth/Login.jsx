@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 export default function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { showToast } = useToast();
 
     const [role, setRole] = useState("citizen");
     const [form, setForm] = useState({ email: "", password: "" });
@@ -21,13 +23,16 @@ export default function Login() {
         try {
             const res = await API.post("/auth/login", { ...form, role });
             login(res.data.user, res.data.token);
+            showToast("Login successful");
             if (res.data.user.role === "official") {
                 navigate("/official/dashboard");
             } else {
                 navigate("/dashboard");
             }
         } catch (err) {
-            setError(err.response?.data?.message || "Login failed. Please try again.");
+            const message = err.response?.data?.message || "Login failed. Please try again.";
+            setError(message);
+            showToast(message, "error");
         } finally {
             setLoading(false);
         }

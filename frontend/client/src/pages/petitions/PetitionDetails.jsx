@@ -24,9 +24,8 @@ export default function PetitionDetails() {
   useEffect(() => {
     const loadPetition = async () => {
       try {
-        const res = await API.get("/petitions?limit=100");
-        const list = res.data.petitions || [];
-        const found = list.find((item) => item._id === id);
+        const res = await API.get(`/petitions/${id}`);
+        const found = res.data?.petition;
 
         if (!found) {
           setError("Petition not found.");
@@ -120,6 +119,41 @@ export default function PetitionDetails() {
                 <p className="pd-description">
                   {petition.description || "No description available."}
                 </p>
+              </div>
+
+              <div className="pd-section">
+                <h3>Official Responses</h3>
+                {petition.responses?.length ? (
+                  <div className="pd-responses">
+                    {petition.responses
+                      .slice()
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                      .map((response, index) => (
+                        <article
+                          key={response._id || `${response.respondedBy?._id || "official"}-${response.createdAt}-${index}`}
+                          className="pd-response-item"
+                        >
+                          <p className="pd-response-message">{response.message}</p>
+                          <div className="pd-response-meta">
+                            <span>{response.respondedBy?.fullName || "Official"}</span>
+                            <span>
+                              {response.createdAt
+                                ? new Date(response.createdAt).toLocaleString("en-IN", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : "Date unavailable"}
+                            </span>
+                          </div>
+                        </article>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="pd-empty-responses">No official responses yet.</p>
+                )}
               </div>
             </div>
           </section>
