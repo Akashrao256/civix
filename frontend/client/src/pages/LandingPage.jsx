@@ -131,7 +131,11 @@ export default function LandingPage() {
           <div className="lp-hero-grid">
             <Reveal className="lp-hero-content">
               <p className="lp-eyebrow">Trusted Civic Participation Platform</p>
-              <h1>Drive transparent citizen-government collaboration at scale</h1>
+              <h1>
+                Drive transparent citizen      government
+                <br />
+                collaboration at scale
+              </h1>
               <p className="lp-hero-copy">
                 A secure, modern petition management system that empowers citizens to raise issues and helps officials respond with speed, clarity, and accountability.
               </p>
@@ -151,7 +155,7 @@ export default function LandingPage() {
                     "Get Started"
                   )}
                 </button>
-                <a href="#how-it-works" className="lp-btn lp-btn-ghost">How it Works</a>
+                <a href="#how-it-works" className="lp-btn lp-btn-ghost">How It Works</a>
               </div>
             </Reveal>
 
