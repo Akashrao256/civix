@@ -33,7 +33,7 @@ export default function OfficialDashboard() {
     const [filterCategory, setFilterCategory] = useState("All");
     const [filterStatus, setFilterStatus] = useState("All");
     const [search, setSearch] = useState("");
-    const [useLocationFilter, setUseLocationFilter] = useState(true);
+    const [useLocationFilter, setUseLocationFilter] = useState(false);
     const [updating, setUpdating] = useState(null);
     const [approvingOfficialId, setApprovingOfficialId] = useState(null);
     const [toast, setToast] = useState(null);
