@@ -138,6 +138,7 @@ exports.getPetitions = async (req, res) => {
 
     const petitions = await Petition.find(finalFilter)
       .populate("creator", "fullName email")
+      .populate("responses.respondedBy", "fullName email")
       .skip(skip)
       .limit(limitNumber)
       .sort({ createdAt: -1 });

@@ -25,6 +25,27 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
     ? stRaw
     : { ...FALLBACK_STATUS, label: FALLBACK_STATUS.label(petition) };
   const catColor = CATEGORY_COLORS[petition.category] || "#f1f5f9";
+  const responseList = Array.isArray(petition.responses)
+    ? [...petition.responses].sort(
+        (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0),
+      )
+    : [];
+  const latestResponse = responseList[0];
+  const latestResponseMessage = latestResponse?.message
+    ? latestResponse.message.length > 160
+      ? `${latestResponse.message.slice(0, 160)}...`
+      : latestResponse.message
+    : "";
+  const formatResponseDate = (timestamp) => {
+    if (!timestamp) return "Date unavailable";
+    return new Date(timestamp).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const currentUserId = currentUser?._id || currentUser?.id;
   const creatorId =
@@ -74,6 +95,24 @@ export default function PetitionCard({ petition, currentUser, onSign, signing, o
           ? petition.description.slice(0, 110) + "..."
           : petition.description}
       </p>
+
+      {isOwner && latestResponse && (
+        <div className="pc-response">
+          <div className="pc-response-label">Latest official response</div>
+          <p className="pc-response-text">{latestResponseMessage || "No message available."}</p>
+          <div className="pc-response-meta">
+            <span>{latestResponse.respondedBy?.fullName || "Official"}</span>
+            <span>{formatResponseDate(latestResponse.createdAt)}</span>
+          </div>
+          <button
+            type="button"
+            className="pc-response-link"
+            onClick={() => navigate(`/petitions/${petition._id}`)}
+          >
+            View full conversation →
+          </button>
+        </div>
+      )}
 
       {/* Spacer pushes footer down */}
       <div className="pc-spacer" />

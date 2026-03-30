@@ -2586,6 +2586,54 @@ body.landing-page-open {
   line-height: 1.55;
 }
 
+.pc-response {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pc-response-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.pc-response-text {
+  font-size: 13px;
+  color: #0f172a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pc-response-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.pc-response-link {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #2563eb;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pc-response-link:hover {
+  text-decoration: underline;
+}
+
 .pc-meta {
   display: flex;
   flex-wrap: wrap;
