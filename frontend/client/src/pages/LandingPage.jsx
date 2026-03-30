@@ -132,7 +132,7 @@ export default function LandingPage() {
             <Reveal className="lp-hero-content">
               <p className="lp-eyebrow">Trusted Civic Participation Platform</p>
               <h1>
-                Drive transparent citizen      governmen
+                Drive transparent citizen      government
                 <br />
                 collaboration at scale
               </h1>

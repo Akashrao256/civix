@@ -294,6 +294,12 @@ exports.updateStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
+    if (petition.status === "closed" && status !== "closed") {
+      return res.status(400).json({
+        message: "Closed petitions cannot be reopened",
+      });
+    }
+
     petition.status = status;
     await petition.save();
 

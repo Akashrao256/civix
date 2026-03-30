@@ -343,7 +343,7 @@ export default function OfficialDashboard() {
                                                     <select
                                                         className="od-action-select"
                                                         value={p.status}
-                                                        disabled={updating === p._id}
+                                                        disabled={updating === p._id || p.status === "closed"}
                                                         onChange={e => handleStatusChange(p._id, e.target.value)}
                                                     >
                                                         <option value="active">Active</option>
