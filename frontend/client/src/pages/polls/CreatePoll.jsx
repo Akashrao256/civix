@@ -4,9 +4,11 @@ import API from "../../api/axios";
 import AppSidebar from "../../components/AppSidebar";
 import Button from "../../components/ui/Button";
 import PageHeader from "../../components/ui/PageHeader";
+import { useToast } from "../../context/ToastContext";
 
 export default function CreatePoll() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [formData, setFormData] = useState({
         question: "",
         targetLocation: "",
@@ -58,6 +60,7 @@ export default function CreatePoll() {
                 targetLocation: formData.targetLocation,
                 options: filteredOptions
             });
+            showToast("✅ Poll created successfully!");
             navigate("/polls");
         } catch (err) {
             setError(err.response?.data?.message || "Failed to create poll");

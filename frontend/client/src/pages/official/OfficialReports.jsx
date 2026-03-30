@@ -93,7 +93,9 @@ export default function OfficialReports() {
     const [loading, setLoading] = useState(true);
     const [downloadingType, setDownloadingType] = useState(null);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [exportFeedback, setExportFeedback] = useState(null);
     const exportMenuRef = useRef(null);
+    const exportFeedbackTimer = useRef(null);
     const { showToast } = useToast();
 
     useEffect(() => {
@@ -120,6 +122,20 @@ export default function OfficialReports() {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (exportFeedbackTimer.current) {
+                window.clearTimeout(exportFeedbackTimer.current);
+            }
+        };
+    }, []);
+
+    const pushExportFeedback = (type, message) => {
+        setExportFeedback({ type, message });
+        window.clearTimeout(exportFeedbackTimer.current);
+        exportFeedbackTimer.current = window.setTimeout(() => setExportFeedback(null), 3200);
+    };
 
     const chartConfig = useMemo(() => {
         if (!report) return null;
@@ -252,10 +268,14 @@ export default function OfficialReports() {
             link.click();
             link.parentNode.removeChild(link);
             setShowExportMenu(false);
-            showToast(`${type.toUpperCase()} report exported successfully`);
+            const successMessage = `${type.toUpperCase()} report exported successfully`;
+            showToast(successMessage);
+            pushExportFeedback("success", successMessage);
         } catch (err) {
             console.error(`Failed to export ${type}`, err);
-            showToast(`Failed to export ${type.toUpperCase()}`, "error");
+            const errorMessage = `Failed to export ${type.toUpperCase()}`;
+            showToast(errorMessage, "error");
+            pushExportFeedback("error", errorMessage);
         } finally {
             setDownloadingType(null);
         }
@@ -305,6 +325,12 @@ export default function OfficialReports() {
                         </div>
                     )}
                 />
+
+                {exportFeedback && (
+                    <div className={`or-export-banner${exportFeedback.type === "error" ? " error" : ""}`}>
+                        {exportFeedback.message}
+                    </div>
+                )}
 
                 {loading ? (
                     <LoadingState message="Generating monthly report..." />

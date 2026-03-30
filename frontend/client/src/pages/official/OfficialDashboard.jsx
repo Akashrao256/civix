@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
 import AppSidebar from "../../components/AppSidebar";
@@ -24,6 +25,7 @@ const FILTER_STATUS_LABELS = { All: "All", active: "Active", under_review: "Unde
 
 export default function OfficialDashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [petitions, setPetitions] = useState([]);
     const [pendingOfficials, setPendingOfficials] = useState([]);
@@ -137,6 +139,16 @@ export default function OfficialDashboard() {
         } finally {
             setApprovingOfficialId(null);
         }
+    };
+
+    const formatResponseDate = (timestamp) => {
+        if (!timestamp) return "Date unavailable";
+        return new Date(timestamp).toLocaleString("en-IN", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
     };
 
     const filtered = petitions.filter(p => {
@@ -308,6 +320,7 @@ export default function OfficialDashboard() {
                                     <th>Category</th>
                                     <th>Location</th>
                                     <th>Signatures</th>
+                                    <th>Responses</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -317,6 +330,10 @@ export default function OfficialDashboard() {
                                     const statusKey = (p.status || "").toLowerCase().replace(/\s+/g, "_");
                                     const sc = STATUS_COLORS[statusKey] || STATUS_COLORS.active;
                                     const statusLabel = STATUS_LABELS[statusKey] || p.status || "Unknown";
+                                    const responseList = Array.isArray(p.responses)
+                                        ? [...p.responses].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                        : [];
+                                    const previewResponses = responseList.slice(0, 2);
                                     return (
                                         <tr key={p._id} className="od-table-row" style={{ animationDelay: `${i * 0.04}s` }}>
                                             <td>
@@ -331,6 +348,40 @@ export default function OfficialDashboard() {
                                             </td>
                                             <td>
                                                 <span className="od-sig-count">✍️ {p.signatureCount ?? 0}</span>
+                                            </td>
+                                            <td>
+                                                {previewResponses.length ? (
+                                                    <div className="od-response-stack">
+                                                        {previewResponses.map((response, idx) => {
+                                                            const previewMessage = response.message && response.message.length > 160
+                                                                ? `${response.message.slice(0, 160)}…`
+                                                                : response.message;
+                                                            return (
+                                                            <div
+                                                                key={response._id || `${p._id}-response-${idx}`}
+                                                                className="od-response-item"
+                                                            >
+                                                                    <p className="od-response-message">{previewMessage || "--"}</p>
+                                                                    <div className="od-response-meta">
+                                                                        <span>{response.respondedBy?.fullName || "Official"}</span>
+                                                                        <span>{formatResponseDate(response.createdAt)}</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        {responseList.length > 2 && (
+                                                            <button
+                                                                type="button"
+                                                                className="od-response-view"
+                                                                onClick={() => navigate(`/petitions/${p._id}`)}
+                                                            >
+                                                                View all {responseList.length}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="od-response-empty">No responses yet</span>
+                                                )}
                                             </td>
                                             <td>
                                                 <span className="od-status-badge" style={{ background: sc.bg, color: sc.color }}>
