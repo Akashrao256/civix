@@ -1,46 +1,68 @@
 const { Parser } = require("json2csv");
-const PDFDocument = require("pdfkit");
 
-// =========================
-// ✅ CSV GENERATOR
-// =========================
+const getSafeReportData = (data = {}) => ({
+  meta: {
+    month: data.meta?.month || "Unknown",
+  },
+  summary: {
+    totalPetitions: Number(data.summary?.totalPetitions || 0),
+    totalSignatures: Number(data.summary?.totalSignatures || 0),
+    totalPolls: Number(data.summary?.totalPolls || 0),
+    totalVotes: Number(data.summary?.totalVotes || 0),
+  },
+  statusBreakdown: {
+    active: Number(data.statusBreakdown?.active || 0),
+    pending: Number(data.statusBreakdown?.pending || 0),
+    underReview: Number(data.statusBreakdown?.underReview || 0),
+    closed: Number(data.statusBreakdown?.closed || 0),
+  },
+});
+
 exports.generateCSV = (data, res) => {
-  const formattedData = [
-    { Section: "Summary", Metric: "Month", Value: data.meta.month },
+  const safeData = getSafeReportData(data);
 
+  const formattedData = [
+    { Section: "Summary", Metric: "Month", Value: safeData.meta.month },
     {
       Section: "Summary",
       Metric: "Total Petitions",
-      Value: data.summary.totalPetitions,
+      Value: safeData.summary.totalPetitions,
     },
     {
       Section: "Summary",
       Metric: "Total Signatures",
-      Value: data.summary.totalSignatures,
+      Value: safeData.summary.totalSignatures,
     },
     {
       Section: "Summary",
       Metric: "Total Polls",
-      Value: data.summary.totalPolls,
+      Value: safeData.summary.totalPolls,
     },
     {
       Section: "Summary",
       Metric: "Total Votes",
-      Value: data.summary.totalVotes,
+      Value: safeData.summary.totalVotes,
     },
-
-    { Section: "Status", Metric: "Active", Value: data.statusBreakdown.active },
+    {
+      Section: "Status",
+      Metric: "Active",
+      Value: safeData.statusBreakdown.active,
+    },
     {
       Section: "Status",
       Metric: "Pending",
-      Value: data.statusBreakdown.pending,
+      Value: safeData.statusBreakdown.pending,
     },
     {
       Section: "Status",
       Metric: "Under Review",
-      Value: data.statusBreakdown.underReview,
+      Value: safeData.statusBreakdown.underReview,
     },
-    { Section: "Status", Metric: "Closed", Value: data.statusBreakdown.closed },
+    {
+      Section: "Status",
+      Metric: "Closed",
+      Value: safeData.statusBreakdown.closed,
+    },
   ];
 
   const parser = new Parser({
@@ -53,137 +75,4 @@ exports.generateCSV = (data, res) => {
   res.attachment("monthly-report.csv");
 
   return res.send(csv);
-};
-
-// =========================
-// ✅ PDF GENERATOR
-// =========================
-
-exports.generatePDF = (data, res) => {
-  const doc = new PDFDocument({ margin: 50 });
-
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader(
-    "Content-Disposition",
-    "attachment; filename=monthly-report.pdf",
-  );
-
-  doc.pipe(res);
-
-  // =========================
-  // 🔴 HEADER
-  // =========================
-  doc.font("Helvetica-Bold").fontSize(20).text("CIVIX", {
-    align: "center",
-  });
-
-  doc.font("Helvetica").fontSize(14).text("Monthly Civic Report", {
-    align: "center",
-  });
-
-  doc.moveDown(0.5);
-
-  doc.fontSize(10).text(`Month: ${data.meta.month}`, {
-    align: "center",
-  });
-
-  doc.text(
-    `Generated on: ${new Date(data.meta.generatedAt).toLocaleDateString()}`,
-    { align: "center" },
-  );
-
-  doc.moveDown();
-
-  // Divider
-  doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-  doc.moveDown(2);
-
-  // =========================
-  // 🔴 SUMMARY
-  // =========================
-  doc.font("Helvetica-Bold").fontSize(14).text("Summary", 50);
-  doc.moveDown(0.5);
-
-  doc.font("Helvetica").fontSize(12);
-
-  const leftX = 50;
-  const rightX = 400;
-  let y = doc.y;
-
-  const summaryRows = [
-    ["Total Petitions:", data.summary.totalPetitions],
-    ["Total Signatures:", data.summary.totalSignatures],
-    ["Total Polls:", data.summary.totalPolls],
-    ["Total Votes:", data.summary.totalVotes],
-  ];
-
-  summaryRows.forEach(([label, value]) => {
-    doc.text(label, leftX, y);
-    doc.text(String(value), rightX, y, {
-      width: 100,
-      align: "right",
-    });
-    y += 20;
-  });
-
-  doc.moveDown(2.0);
-
-  // =========================
-  // 🔴 STATUS BREAKDOWN
-  // =========================
-  doc.font("Helvetica-Bold").fontSize(14).text("Petition Status Breakdown", 50); // force left align
-
-  doc.moveDown();
-
-  const col1 = 50;
-  const col2 = 400;
-  let tableY = doc.y;
-
-  // Table Header
-  doc.font("Helvetica-Bold");
-  doc.text("Status", col1, tableY);
-  doc.text("Count", col2, tableY, {
-    width: 100,
-    align: "right",
-  });
-
-  doc.moveDown(0.5);
-  tableY = doc.y;
-
-  doc.font("Helvetica");
-
-  const rows = [
-    ["Active", data.statusBreakdown.active],
-    ["Pending", data.statusBreakdown.pending],
-    ["Under Review", data.statusBreakdown.underReview],
-    ["Closed", data.statusBreakdown.closed],
-  ];
-
-  rows.forEach(([status, count]) => {
-    doc.text(status, col1, tableY);
-    doc.text(String(count), col2, tableY, {
-      width: 100,
-      align: "right",
-    });
-    tableY += 20;
-  });
-
-  doc.moveDown();
-
-  // Divider
-  doc
-    .moveTo(50, tableY + 10)
-    .lineTo(550, tableY + 10)
-    .stroke();
-  doc.moveDown(2);
-
-  // =========================
-  // 🔴 FOOTER (FIXED LEFT ALIGN)
-  // =========================
-  doc
-    .font("Helvetica-Oblique")
-    .fontSize(10)
-    .text("Generated by Civix Platform", 50); // force LEFT
-
-  doc.end();
 };

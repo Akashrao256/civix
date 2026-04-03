@@ -3405,6 +3405,77 @@ body.landing-page-open {
   cursor: not-allowed;
 }
 
+.or-month-row {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.or-month-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.or-month-label {
+  margin: 0;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.or-month-label span {
+  color: #4f46e5;
+}
+
+.or-month-help {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.or-month-select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.or-month-select-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.or-month-select {
+  appearance: none;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.or-month-select:focus {
+  border-color: rgba(79, 70, 229, 0.55);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.or-month-select:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
 .or-charts-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -3493,6 +3564,14 @@ body.landing-page-open {
 }
 
 @media (max-width: 700px) {
+  .or-month-row {
+    align-items: stretch;
+  }
+
+  .or-month-select-wrap {
+    min-width: 100%;
+  }
+
   .or-section-header {
     flex-direction: column;
     align-items: flex-start;

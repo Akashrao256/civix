@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civix Monthly Report</title>
+    <style>
+      :root {
+        --page-bg: #f7f6f3;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --surface-tint: #fdfcfa;
+        --border: #e5e7eb;
+        --text: #0f172a;
+        --muted: #475569;
+        --muted-soft: #64748b;
+        --accent: #8b0000;
+        --shadow-lg: 0 24px 48px rgba(15, 23, 42, 0.08);
+        --shadow-md: 0 12px 28px rgba(15, 23, 42, 0.08);
+        --shadow-sm: 0 8px 22px rgba(15, 23, 42, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--text);
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page-shell {
+        width: 100%;
+        padding: 40px 0 48px;
+      }
+
+      .container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      .header-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        font-size: 15px;
+        color: var(--muted);
+        font-weight: 500;
+        line-height: 1.6;
+      }
+
+      .meta-card {
+        min-width: 240px;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px 20px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .meta-group + .meta-group {
+        margin-top: 14px;
+      }
+
+      .meta-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        color: var(--muted-soft);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .meta-value {
+        display: block;
+        font-size: 17px;
+        color: #334155;
+        font-weight: 800;
+        line-height: 1.35;
+      }
+
+      .report-month {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .report-month span {
+        color: #4f46e5;
+      }
+
+      .overview-section {
+        margin-bottom: 32px;
+      }
+
+      .overview-title {
+        margin: 0 0 14px;
+        color: #334155;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .cards-grid.cards-grid-polls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 600px;
+      }
+
+      .stat-card {
+        border-radius: 18px;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        min-height: 156px;
+        page-break-inside: avoid;
+      }
+
+      .stat-card-icon {
+        font-size: 28px;
+        line-height: 1;
+      }
+
+      .stat-card-value {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .stat-card-label {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.92);
+        line-height: 1.4;
+      }
+
+      .insights-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        page-break-inside: avoid;
+      }
+
+      .insights-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .insights-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .insights-subtitle {
+        margin: 8px 0 0;
+        color: var(--muted-soft);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .insights-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 9px 13px;
+        border-radius: 999px;
+        background: rgba(79, 70, 229, 0.08);
+        color: #4338ca;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        align-items: stretch;
+      }
+
+      .chart-card,
+      .insight-card {
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        min-height: 320px;
+        page-break-inside: avoid;
+      }
+
+      .chart-card.chart-card-compact,
+      .insight-card {
+        min-height: 300px;
+      }
+
+      .chart-header {
+        margin-bottom: 18px;
+      }
+
+      .chart-header h4 {
+        margin: 0;
+        font-size: 16px;
+        color: var(--text);
+        font-weight: 800;
+      }
+
+      .chart-header span {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted-soft);
+      }
+
+      .chart-body {
+        height: 240px;
+        position: relative;
+      }
+
+      .chart-body.chart-body-donut {
+        height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .chart-body canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .insight-card h4 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        color: var(--text);
+        font-weight: 800;
+      }
+
+      .insight-card ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .insight-card strong {
+        color: var(--text);
+      }
+
+      .footer {
+        margin-top: 32px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+        color: var(--muted-soft);
+        font-size: 12px;
+        text-align: right;
+        letter-spacing: 0.02em;
+      }
+
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+
+      @media print {
+        .page-shell {
+          padding: 0;
+        }
+
+        .header-panel,
+        .cards-grid,
+        .charts-grid,
+        .stat-card,
+        .chart-card,
+        .insight-card,
+        .meta-card {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="container">
+        <section class="header-panel">
+          <div>
+            <h1 class="title">&#128202; Civic Engagement Reports</h1>
+            <p class="subtitle">
+              Monthly overview of activity in your locality
+            </p>
+          </div>
+
+          <aside class="meta-card">
+            <div class="meta-group">
+              <span class="meta-label">Report Month</span>
+              <span class="meta-value">{{MONTH}}</span>
+            </div>
+            <div class="meta-group">
+              <span class="meta-label">Generated</span>
+              <span class="meta-value">{{GENERATED_DATE}}</span>
+            </div>
+          </aside>
+        </section>
+
+        <p class="report-month">Report Month: <span>{{MONTH}}</span></p>
+
+        <section class="overview-section">
+          <h3 class="overview-title">&#128203; Petitions Overview</h3>
+          <div class="cards-grid">{{PETITION_CARDS}}</div>
+        </section>
+
+        <section class="overview-section">
+          <h3 class="overview-title">&#128202; Polls Overview</h3>
+          <div class="cards-grid cards-grid-polls">{{POLL_CARDS}}</div>
+        </section>
+
+        <section class="insights-section">
+          <div class="insights-header">
+            <div>
+              <h3 class="insights-title">&#128200; Visual Insights</h3>
+              <p class="insights-subtitle">
+                Charts highlight petition status share and overall engagement
+                mix.
+              </p>
+            </div>
+            <span class="insights-pill">Auto-refreshed monthly</span>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Petition Status Breakdown</h4>
+                <span>Counts by current status</span>
+              </div>
+              <div class="chart-body">
+                <canvas id="statusBarChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Engagement Mix</h4>
+                <span>Petitions, signatures, polls, and votes</span>
+              </div>
+              <div class="chart-body">
+                <canvas id="engagementLineChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card chart-card-compact">
+              <div class="chart-header">
+                <h4>Status Share</h4>
+                <span>Relative distribution this month</span>
+              </div>
+              <div class="chart-body chart-body-donut">
+                <canvas id="statusShareChart"></canvas>
+              </div>
+            </div>
+
+            <div class="insight-card">
+              <h4>Key Insights</h4>
+              <ul>
+                {{KEY_INSIGHTS}}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Footer moved OUTSIDE card -->
+          <div class="footer">Generated by Civix Platform</div>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

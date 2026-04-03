@@ -32,18 +32,44 @@ ChartJS.register(
     Filler
 );
 
+const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+});
+
+const getMonthValue = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+};
+
+const buildMonthOptions = (count = 12) => {
+    const current = new Date();
+    current.setDate(1);
+    current.setHours(0, 0, 0, 0);
+
+    return Array.from({ length: count }, (_, index) => {
+        const optionDate = new Date(current.getFullYear(), current.getMonth() - index, 1);
+
+        return {
+            value: getMonthValue(optionDate),
+            label: MONTH_LABEL_FORMATTER.format(optionDate),
+        };
+    });
+};
+
 const PETITION_CARDS = (report) => [
-    { label: "Total Petitions",    value: report.totalPetitions,      icon: "📋", gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
-    { label: "Active Petitions",   value: report.activePetitions,     icon: "🔥", gradient: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
-    { label: "Under Review",       value: report.underReviewPetitions,icon: "🔍", gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
-    { label: "Pending",            value: report.pendingPetitions,    icon: "⏳", gradient: "linear-gradient(135deg, #38bdf8, #0ea5e9)" },
-    { label: "Closed Petitions",   value: report.closedPetitions,     icon: "🔒", gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
-    { label: "Total Signatures",   value: report.totalSignatures,     icon: "✍️", gradient: "linear-gradient(135deg, #60a5fa, #1d4ed8)" },
+    { label: "Total Petitions", value: report.totalPetitions, icon: "\u{1F4CB}", gradient: "linear-gradient(135deg, #0ea5e9, #2563eb)" },
+    { label: "Active Petitions", value: report.activePetitions, icon: "\u{1F525}", gradient: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+    { label: "Under Review", value: report.underReviewPetitions, icon: "\u{1F50D}", gradient: "linear-gradient(135deg, #f59e0b, #d97706)" },
+    { label: "Pending", value: report.pendingPetitions, icon: "\u{23F3}", gradient: "linear-gradient(135deg, #38bdf8, #0ea5e9)" },
+    { label: "Closed Petitions", value: report.closedPetitions, icon: "\u{1F512}", gradient: "linear-gradient(135deg, #ef4444, #dc2626)" },
+    { label: "Total Signatures", value: report.totalSignatures, icon: "\u270D\uFE0F", gradient: "linear-gradient(135deg, #60a5fa, #1d4ed8)" },
 ];
 
 const POLL_CARDS = (report) => [
-    { label: "Total Polls",      value: report.totalPolls,  icon: "📊", gradient: "linear-gradient(135deg, #3b82f6, #2563eb)" },
-    { label: "Total Votes Cast", value: report.totalVotes,  icon: "🗳️", gradient: "linear-gradient(135deg, #ec4899, #db2777)" },
+    { label: "Total Polls", value: report.totalPolls, icon: "\u{1F4CA}", gradient: "linear-gradient(135deg, #3b82f6, #2563eb)" },
+    { label: "Total Votes Cast", value: report.totalVotes, icon: "\u{1F5F3}\uFE0F", gradient: "linear-gradient(135deg, #ec4899, #db2777)" },
 ];
 
 function ReportStatCard({ label, value, icon, gradient }) {
@@ -60,8 +86,12 @@ function ReportStatCard({ label, value, icon, gradient }) {
                 transition: "transform 0.2s ease",
                 cursor: "default",
             }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+            }}
         >
             <span style={{ fontSize: "28px" }}>{icon}</span>
             <p style={{ fontSize: "34px", fontWeight: "800", color: "#fff", margin: 0, lineHeight: 1 }}>{value}</p>
@@ -91,26 +121,61 @@ function normalizeReport(raw) {
 export default function OfficialReports() {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isRefreshingReport, setIsRefreshingReport] = useState(false);
     const [downloadingType, setDownloadingType] = useState(null);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [exportFeedback, setExportFeedback] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState(() => getMonthValue(new Date()));
     const exportMenuRef = useRef(null);
     const exportFeedbackTimer = useRef(null);
+    const hasLoadedReport = useRef(false);
     const { showToast } = useToast();
 
+    const monthOptions = useMemo(() => buildMonthOptions(12), []);
+
     useEffect(() => {
+        let ignore = false;
+
         const fetchReport = async () => {
+            const initialLoad = !hasLoadedReport.current;
+
             try {
-                const res = await API.get("/reports/monthly");
-                setReport(normalizeReport(res.data));
+                if (initialLoad) {
+                    setLoading(true);
+                } else {
+                    setIsRefreshingReport(true);
+                }
+
+                const res = await API.get("/reports/monthly", {
+                    params: { month: selectedMonth },
+                });
+
+                if (!ignore) {
+                    setReport(normalizeReport(res.data));
+                    hasLoadedReport.current = true;
+                }
             } catch (err) {
                 console.error("Failed to load report", err);
+                if (!ignore) {
+                    showToast("Failed to load report data", "error");
+                }
             } finally {
-                setLoading(false);
+                if (!ignore) {
+                    if (initialLoad) {
+                        setLoading(false);
+                    } else {
+                        setIsRefreshingReport(false);
+                    }
+                }
             }
         };
+
         fetchReport();
-    }, []);
+
+        return () => {
+            ignore = true;
+        };
+    }, [selectedMonth, showToast]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -259,11 +324,14 @@ export default function OfficialReports() {
     const handleExport = async (type) => {
         setDownloadingType(type);
         try {
-            const res = await API.get(`/reports/export/${type}`, { responseType: "blob" });
+            const res = await API.get(`/reports/export/${type}`, {
+                responseType: "blob",
+                params: { month: selectedMonth },
+            });
             const url = window.URL.createObjectURL(new Blob([res.data]));
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", `monthly-civic-engagement-report.${type}`);
+            link.setAttribute("download", `monthly-civic-engagement-report-${selectedMonth}.${type}`);
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
@@ -286,7 +354,6 @@ export default function OfficialReports() {
             <AppSidebar />
 
             <div className="app-main">
-                {/* Header */}
                 <PageHeader
                     title="📊 Civic Engagement Reports"
                     subtitle="Monthly overview of activity in your locality"
@@ -299,7 +366,7 @@ export default function OfficialReports() {
                                 aria-haspopup="menu"
                                 aria-expanded={showExportMenu}
                             >
-                                {downloadingType ? "⟳ Downloading..." : "📤 Export"}
+                                {downloadingType ? "\u27F3 Downloading..." : "\u{1F4E4} Export"}
                             </Button>
 
                             {showExportMenu && (
@@ -310,7 +377,7 @@ export default function OfficialReports() {
                                         onClick={() => handleExport("csv")}
                                         disabled={Boolean(downloadingType)}
                                     >
-                                        📥 Export as CSV
+                                        {"\u{1F4E5} Export as CSV"}
                                     </button>
                                     <button
                                         type="button"
@@ -318,7 +385,7 @@ export default function OfficialReports() {
                                         onClick={() => handleExport("pdf")}
                                         disabled={Boolean(downloadingType)}
                                     >
-                                        📄 Export as PDF
+                                        {"\u{1F4C4} Export as PDF"}
                                     </button>
                                 </div>
                             )}
@@ -338,34 +405,63 @@ export default function OfficialReports() {
                     <EmptyState title="No report data available" description="Try refreshing or check report generation status." />
                 ) : (
                     <div>
-                        <p style={{ marginBottom: "20px", color: "#475569", fontWeight: "600" }}>
-                            Report Month: <span style={{ color: "#4f46e5" }}>{report.month}</span>
-                        </p>
+                        <div className="or-month-row">
+                            <div className="or-month-copy">
+                                <p className="or-month-label">
+                                    Report Month: <span>{report.month}</span>
+                                </p>
+                                <p className="or-month-help">
+                                    Choose a recent month to refresh cards, charts, and exports.
+                                </p>
+                            </div>
 
-                        {/* Petitions */}
-                        <h3 style={{ marginBottom: "14px", color: "#334155", fontSize: "16px" }}>📋 Petitions Overview</h3>
+                            <div className="or-month-select-wrap">
+                                <label className="or-month-select-label" htmlFor="report-month-select">
+                                    Select month
+                                </label>
+                                <select
+                                    id="report-month-select"
+                                    className="or-month-select"
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(e.target.value)}
+                                    disabled={isRefreshingReport}
+                                >
+                                    {monthOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 style={{ marginBottom: "14px", color: "#334155", fontSize: "16px" }}>
+                            {"\u{1F4CB} Petitions Overview"}
+                        </h3>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))", gap: "16px", marginBottom: "32px" }}>
                             {PETITION_CARDS(report).map((card) => (
                                 <ReportStatCard key={card.label} {...card} />
                             ))}
                         </div>
 
-                        {/* Polls */}
-                        <h3 style={{ marginBottom: "14px", color: "#334155", fontSize: "16px" }}>📊 Polls Overview</h3>
+                        <h3 style={{ marginBottom: "14px", color: "#334155", fontSize: "16px" }}>
+                            {"\u{1F4CA} Polls Overview"}
+                        </h3>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))", gap: "16px" }}>
                             {POLL_CARDS(report).map((card) => (
                                 <ReportStatCard key={card.label} {...card} />
                             ))}
                         </div>
 
-                        {/* Visual Insights */}
                         <div className="or-section">
                             <div className="or-section-header">
                                 <div>
-                                    <h3 className="or-section-title">📈 Visual Insights</h3>
+                                    <h3 className="or-section-title">{"\u{1F4C8} Visual Insights"}</h3>
                                     <p className="or-section-sub">Charts highlight petition status share and overall engagement mix.</p>
                                 </div>
-                                <span className="or-pill">Auto-refreshed monthly</span>
+                                <span className="or-pill">
+                                    {isRefreshingReport ? "Updating..." : "Auto-refreshed monthly"}
+                                </span>
                             </div>
 
                             <div className="or-charts-grid">

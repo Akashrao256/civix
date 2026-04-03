@@ -1,16 +1,15 @@
 const { getMonthlyReportData } = require("../services/reportService");
-const { generateCSV, generatePDF } = require("../utils/reportGenerator");
+const { generateCSV } = require("../utils/reportGenerator");
+const { generatePDF } = require("../utils/puppeteerReportGenerator");
 
 // GET JSON Report
 exports.getMonthlyReport = async (req, res) => {
   try {
-
-    const report = await getMonthlyReportData();
+    const report = await getMonthlyReportData(req.query.month);
 
     res.status(200).json(report);
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
 
@@ -18,13 +17,11 @@ exports.getMonthlyReport = async (req, res) => {
 // Export CSV
 exports.exportCSV = async (req, res) => {
   try {
-
-    const report = await getMonthlyReportData();
+    const report = await getMonthlyReportData(req.query.month);
 
     return generateCSV(report, res);
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
 
@@ -32,12 +29,10 @@ exports.exportCSV = async (req, res) => {
 // Export PDF
 exports.exportPDF = async (req, res) => {
   try {
-
-    const report = await getMonthlyReportData();
+    const report = await getMonthlyReportData(req.query.month);
 
     return generatePDF(report, res);
-
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
